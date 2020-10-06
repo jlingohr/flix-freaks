@@ -14,17 +14,25 @@ class AnalyticServiceInterpreter(ratingService: RatingRepository,
                                  genreService: GenreRepository) extends AnalyticService {
 
   override def getUserAnalytics(userId: UserId): Future[UserAnalytics] = {
+    val userRatings = ratingService.getByUser(userId)
+    val movies = userRatings.flatMap { ur =>
+      movieService.findAllByIds(ur.map(_.movieId).toSet)
+    }
+    val moviesWithGenres = movies.flatMap { movies =>
+      movieService.moviesWithGenres(movies.map(_.movieId).toSet)
+    }
+    val log = logService.getByUserId(userId)
     val userAnalytics = for {
-      userRatings <- ratingService.getByUser(userId)
-      movies <- movieService.findAllByIds(userRatings.map(_.movieId).toSet)
-      log <- logService.getByUserId(userId)
-      mwg <- movieService.moviesWithGenres(movies.map(_.movieId).toSet)
-      ratings = userRatings.map(rating => rating.movieId -> rating).toMap
+      ur <- userRatings
+      l <- log
+      m <- movies
+      mwg <- moviesWithGenres
+      ratings = ur.map(rating => rating.movieId -> rating).toMap
     } yield UserAnalytics(userId,
       buildGenreStatistics(mwg, ratings),
       ratings.size,
-      buildMovieDTOs(movies, ratings),
-      log)
+      buildMovieDTOs(m, ratings),
+      l)
 
     userAnalytics
   }

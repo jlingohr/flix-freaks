@@ -44,9 +44,16 @@ trait MovieSlickRepository extends MovieRepository with DatabaseConfig {
     db.run(movies.result)
   }
 
-  def moviesWithGenres(movieIds: Set[String]): Future[Seq[(Movie, MovieGenre)]] = ???
+  def moviesWithGenres(movieIds: Set[String]): Future[Seq[(Movie, MovieGenre)]] = {
+    db.run(
+      (movieTable.filter(_.movieId.inSet(movieIds))
+        join
+        movieGenres.filter(_.movieId.inSet(movieIds))).result
+    )
+  }
 
-  def findAllByIds(movieIds: Set[String]): Future[Seq[Movie]] = ???
+  def findAllByIds(movieIds: Set[String]): Future[Seq[Movie]] =
+    db.run(movieTable.filter(_.movieId.inSet(movieIds)).result)
 }
 
 object MovieSlickRepository extends MovieSlickRepository
