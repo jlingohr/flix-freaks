@@ -1,8 +1,8 @@
 package service.interpretor
 
 import analytics.service.AnalyticService
-import domain.{ContentAnalytics, ContentId, EventLog, Genre, GenreStatistics, Movie, MovieDTO, Rating, UserAnalytics, UserId}
-import repository.{EventRepository, GenreRepository, MovieGenre, MovieRepository, RatingRepository}
+import domain._
+import repository._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

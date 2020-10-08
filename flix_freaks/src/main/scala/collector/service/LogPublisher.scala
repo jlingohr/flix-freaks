@@ -3,15 +3,12 @@ package main.scala.collector.service
 import java.time.Instant
 
 import akka.actor.typed.scaladsl.Behaviors
-import akka.stream.alpakka.slick.scaladsl.Slick
-import akka.stream.scaladsl.Source
 import config.DatabaseConfig
 import domain.{EventLog, EventType}
 import repository.interpreter.EventSlickRepository.LogTable
-import slick.lifted.TableQuery
 import slick.jdbc.PostgresProfile.api._
+import slick.lifted.TableQuery
 
-import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 

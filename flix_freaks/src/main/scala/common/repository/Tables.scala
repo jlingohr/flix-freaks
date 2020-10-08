@@ -52,7 +52,7 @@ object DateMapper {
 class RatingTable(tag: Tag) extends Table[Rating](tag, "rating") {
   def userId: Rep[String] = column[String]("user_id")
   def movieId: Rep[String] = column[String]("movie_id")
-  def rating: Rep[Float] = column[Float]("rating")
+  def rating: Rep[BigDecimal] = column[BigDecimal]("rating")
   def ratingTimestamp: Rep[Instant] = column[Instant]("rating_timestamp") //(DateMapper.dateToTimestamp)
   def isExplicit: Rep[Boolean] = column[Boolean]("is_explicit", O.Default(true))
 

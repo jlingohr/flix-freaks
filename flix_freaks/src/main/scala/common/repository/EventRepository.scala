@@ -1,6 +1,6 @@
 package repository
 
-import domain.{ContentId, EventType, EventLog, UserId}
+import domain.{ContentId, EventLog, EventType, UserId}
 
 import scala.concurrent.Future
 

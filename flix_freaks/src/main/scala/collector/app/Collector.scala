@@ -1,11 +1,9 @@
 package main.scala.collector.app
 
 import akka.actor.typed.ActorSystem
-import akka.http.scaladsl.server.Directives.parameters
-import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.Http
-
 import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.Directives.{parameters, _}
 import main.scala.collector.service.LogSlickPublisherActor
 
 import scala.io.StdIn

@@ -1,6 +1,7 @@
 package analytics.service
 
-import domain.{ContentId, ContentAnalytics, EventLog, UserId, UserAnalytics}
+import domain.{ContentAnalytics, ContentId, UserAnalytics, UserId}
+
 import scala.concurrent.Future
 
 trait AnalyticService {

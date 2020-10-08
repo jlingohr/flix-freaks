@@ -4,6 +4,6 @@ import java.time.Instant
 
 case class Rating(userId: String,
                   movieId: String,
-                  rating: Float,
+                  rating: BigDecimal,
                   timeStamp: Instant,
                   isExplicit: Boolean = true)

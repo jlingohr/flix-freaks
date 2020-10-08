@@ -5,9 +5,8 @@ import java.time.Instant
 import config.DatabaseConfig
 import domain._
 import repository.EventRepository
-import slick.lifted.{TableQuery, Tag}
-import slick.lifted.TableQuery
 import slick.jdbc.PostgresProfile.api._
+import slick.lifted.{TableQuery, Tag}
 
 import scala.concurrent.Future
 

@@ -4,7 +4,7 @@ import java.time.Instant
 import java.time.format.DateTimeFormatter
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import domain.{ContentAnalytics, ContentId, EventLog, EventType, GenreStatistics, MovieDTO, Rating, UserAnalytics, UserId}
+import domain._
 import spray.json.{DefaultJsonProtocol, DeserializationException, JsString, JsValue, JsonFormat, RootJsonFormat}
 
 trait SprayJsonCodes extends SprayJsonSupport with DefaultJsonProtocol {

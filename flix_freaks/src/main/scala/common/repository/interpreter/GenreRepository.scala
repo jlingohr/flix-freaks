@@ -4,9 +4,9 @@ import config.DatabaseConfig
 import domain.Genre
 import repository.{GenreRepository, GenreTable}
 import slick.dbio.NoStream
+import slick.jdbc.PostgresProfile.api._
 import slick.lifted.TableQuery
 import slick.sql.SqlAction
-import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.Future
 

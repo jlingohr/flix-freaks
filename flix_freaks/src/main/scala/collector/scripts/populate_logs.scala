@@ -3,19 +3,17 @@ package scripts
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.alpakka.slick.scaladsl.SlickSession
-import domain.{EventLog, addToList, details, genreView, moreDetails, play}
+import domain._
 import repository.interpreter.EventSlickRepository.LogTable
-import slick.dbio.DBIO
 import slick.jdbc.JdbcBackend.Database
-import slick.lifted.TableQuery
-import spray.json._
-import spray.json.DefaultJsonProtocol._
 import slick.jdbc.PostgresProfile.api._
+import slick.lifted.TableQuery
+import spray.json.DefaultJsonProtocol._
+import spray.json._
 
 import scala.collection.SortedMap
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import scala.io.Source
 import scala.util.Random
 
 class User(var sessionId: Int, val userId: String, likes: SortedMap[String, Int], var events: Map[Int, List[String]]) {

@@ -3,8 +3,8 @@ package repository.interpreter
 import config.DatabaseConfig
 import domain.{Rating, UserId}
 import repository.{RatingRepository, RatingTable}
-import slick.lifted.TableQuery
 import slick.jdbc.PostgresProfile.api._
+import slick.lifted.TableQuery
 
 import scala.concurrent.Future
 
