@@ -4,54 +4,23 @@ import java.time.Instant
 
 import config.DatabaseConfig
 import domain._
+import main.scala.common.repository.EventMapper
 import repository.EventRepository
 import slick.jdbc.PostgresProfile.api._
-import slick.lifted.{TableQuery, Tag}
+import slick.lifted.{Query, Tag}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
+import main.scala.common.repository.Events._
 
-object EventSlickRepository extends EventRepository with DatabaseConfig {
 
-  implicit val eventStateMapper = MappedColumnType.base[EventType, String](
-    {
-      case genreView => "genreView";
-      case details => "details";
-      case moreDetails => "moreDetails";
-      case addToList => "addToList";
-      case play => "play";
-    },
-    {
-      case "genreView" => genreView;
-      case "details" => details;
-      case "moreDetails" => moreDetails;
-      case "addToList" => addToList;
-      case "play" => play;
-    }
-  )
+class EventSlickRepository()(implicit ec: ExecutionContext) extends EventRepository with DatabaseConfig {
+  import EventMapper._
 
-  class LogTable(tag: Tag) extends Table[EventLog](tag, "log") {
-    def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
+  def insert(log: EventLog): Future[Int] = db.run(events += log)
 
-    def created = column[Instant]("created")
+  def getByUserId(userId: UserId): Future[Seq[EventLog]] = db.run(events.filter(_.userId === userId.value).result)
 
-    def userId = column[String]("user_id")
+  def getByContentId(contentId: ContentId): Future[Seq[EventLog]] = db.run(events.filter(_.contentId === contentId.value).result)
 
-    def contentId = column[String]("content_id")
-
-    def event = column[EventType]("event")(eventStateMapper)
-
-    def sessionId = column[String]("session_id")
-
-    override def * = (id, created, userId, contentId, event, sessionId) <> ((EventLog.apply _).tupled, EventLog.unapply)
-  }
-
-  val table = TableQuery[LogTable]
-
-  def insert(log: EventLog): Future[Int] = db.run(table += log)
-
-  def getByUserId(userId: UserId): Future[Seq[EventLog]] = db.run(table.filter(_.userId === userId.value).result)
-
-  def getByContentId(contentId: ContentId): Future[Seq[EventLog]] = db.run(table.filter(_.contentId === contentId.value).result)
-
-  def getByEventType(eventType: EventType): Future[Seq[EventLog]] = db.run(table.filter(_.event === eventType).result)
+  def getByEventType(eventType: EventType): Future[Seq[EventLog]] = db.run(events.filter(_.event === eventType).result)
 }
