@@ -1,17 +1,18 @@
 package main.scala.recommender.service.interpreter
 
 import domain.{EventType, UserId}
+import main.scala.recommender.domain.{EventCount, RecommendedItem}
 import main.scala.recommender.repository.{EventRepository, RatingRepository}
 import main.scala.recommender.service.PopularityRecommenderService
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case class RecommendedItem(movieId: String, numRatings: Int, avgRating: BigDecimal)
+
 
 class PopularityRecommenderSlickService(ratingRepository: RatingRepository,
                                        logRepository: EventRepository)
                                        (implicit ec: ExecutionContext)
-  extends PopularityRecommenderService[BigDecimal, RecommendedItem] {
+  extends PopularityRecommenderService[BigDecimal, RecommendedItem, EventCount] {
 
   override def predictScore(userId: UserId, itemId: String): Future[Option[BigDecimal]] = {
     val avgRating = ratingRepository.getAvgRating(userId, itemId)
@@ -28,7 +29,7 @@ class PopularityRecommenderSlickService(ratingRepository: RatingRepository,
     }
   }
 
-  override def recommendItemsFromLog(num: Int): Future[Seq[(String, Int)]] = {
+  override def recommendItemsFromLog(num: Int): Future[Seq[EventCount]] = {
     val items = logRepository.filterContentByEvent(EventType.apply("play"), num)
     items
   }

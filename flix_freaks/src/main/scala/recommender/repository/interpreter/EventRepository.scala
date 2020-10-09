@@ -8,10 +8,15 @@ import slick.lifted.TableQuery
 
 import scala.concurrent.Future
 import main.scala.common.repository.Events._
+import main.scala.recommender.domain.EventCount
+
+import scala.concurrent.ExecutionContext.Implicits.global
+
+
 
 class EventSlickRepository extends EventRepository with DatabaseConfig {
 
-  def filterContentByEvent(event: EventType, take: Int): Future[Seq[(String, Int)]] = {
+  def filterContentByEvent(event: EventType, take: Int): Future[Seq[EventCount]] = {
     val query =
       events
         .filter(_.event.equals(event))
@@ -21,6 +26,9 @@ class EventSlickRepository extends EventRepository with DatabaseConfig {
         }
         .sortBy(_._2.desc.nullsLast)
         .take(take)
+        .map {
+          case (id, count) => ((id, count)) <> (EventCount.tupled, EventCount.unapply _)
+        }
 
     db.run(query.result)
   }
