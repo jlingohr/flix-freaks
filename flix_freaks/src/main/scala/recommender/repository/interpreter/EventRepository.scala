@@ -3,18 +3,17 @@ package main.scala.recommender.repository.interpreter
 import config.DatabaseConfig
 import domain.EventType
 import main.scala.recommender.repository.EventRepository
-import repository.interpreter.EventSlickRepository.LogTable
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.TableQuery
 
 import scala.concurrent.Future
+import main.scala.common.repository.Events._
 
-trait EventSlickRepository extends EventRepository with DatabaseConfig {
-  val table = TableQuery[LogTable]
+class EventSlickRepository extends EventRepository with DatabaseConfig {
 
   def filterContentByEvent(event: EventType, take: Int): Future[Seq[(String, Int)]] = {
     val query =
-      table
+      events
         .filter(_.event.equals(event))
         .groupBy(_.contentId)
         .map {
@@ -27,6 +26,4 @@ trait EventSlickRepository extends EventRepository with DatabaseConfig {
   }
 }
 
-object EventRepository {
-
-}
+object EventRepository extends EventSlickRepository

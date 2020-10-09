@@ -2,23 +2,23 @@ package main.scala.recommender.repository.interpreter
 
 import config.DatabaseConfig
 import domain.UserId
-import repository.{RatingRepository, RatingTable}
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.TableQuery
 
 import scala.concurrent.Future
+import main.scala.common.repository.Ratings._
+import main.scala.recommender.repository.RatingRepository
 
-trait RatingSlickRepository extends RatingRepository with DatabaseConfig {
-  val table = TableQuery[RatingTable]
+class RatingSlickRepository extends RatingRepository with DatabaseConfig {
 
   def getAvgRating(userId: UserId, itemId: String): Future[Option[BigDecimal]] = {
     db.run(
-      table.filter(t => t.userId =!= userId.value && t.movieId === itemId).map(_.rating).avg.result
+      ratings.filter(t => t.userId =!= userId.value && t.movieId === itemId).map(_.rating).avg.result
     )
   }
 
   def getNotRatedBy(userId: UserId, take: Int): Future[Seq[(String, Int, Option[BigDecimal])]] = {
-    val query = table
+    val query = ratings
       .filter(_.userId =!= userId.value)
       .groupBy(_.movieId)
       .map {
@@ -33,7 +33,7 @@ trait RatingSlickRepository extends RatingRepository with DatabaseConfig {
 
   def getAvgRatingForItem(itemId: String): Future[Option[Option[BigDecimal]]] = {
     val query =
-      table
+      ratings
         .filter(_.movieId === itemId)
         .groupBy(_.movieId)
         .map {
@@ -46,6 +46,4 @@ trait RatingSlickRepository extends RatingRepository with DatabaseConfig {
   }
 }
 
-object RatingRepository {
-
-}
+object RatingRepository extends RatingSlickRepository
