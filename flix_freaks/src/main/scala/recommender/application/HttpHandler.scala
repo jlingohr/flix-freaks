@@ -1,6 +1,7 @@
 package main.scala.recommender.application
 
 import domain.{Movie, Rating, UserId}
+import main.scala.common.domain.SeededRecommendation
 import main.scala.recommender.domain.{ChartRecommendation, EventCount, Jaccard, Pearson, RecommendedItem, SimilarUsersCalculation, SimilarityMethod}
 import main.scala.recommender.repository.RatingRepository
 import main.scala.recommender.service.PopularityRecommenderService
@@ -10,11 +11,12 @@ import scala.concurrent.{ExecutionContext, Future}
 import main.scala.recommender.service.interpreter.SimilarityCalculation._
 
 
+
 class HttpHandler(popularityRecommenderService: PopularityRecommenderService[BigDecimal, RecommendedItem, EventCount],
                  movieRepository: MovieRepository,
                  ratingRepository: RatingRepository[Rating])
                  (implicit ec: ExecutionContext)
-  extends RestService[SimilarityMethod, Any, ChartRecommendation, SimilarUsersCalculation] {
+  extends RestService[SimilarityMethod, Any, ChartRecommendation, SimilarUsersCalculation, SeededRecommendation, RecommendedItem] {
 
   // TODO should cache this result on a daily basis so as not to always make an expensive call
   override def chart(take: Int): Future[Seq[ChartRecommendation]] = {
@@ -125,6 +127,10 @@ class HttpHandler(popularityRecommenderService: PopularityRecommenderService[Big
 
     SimilarUsersCalculation(userId, numRated, method, topN, topN)
   }
+
+  override def getAssociationRulesFor(contentId: String, take: Int): Future[Seq[SeededRecommendation]] = ???
+
+  override def recsUsingAssociationRules(userId: UserId, take: Int): Future[Seq[RecommendedItem]] = ???
 }
 
 

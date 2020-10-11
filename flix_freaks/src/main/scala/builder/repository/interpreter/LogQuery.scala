@@ -38,4 +38,8 @@ class LogSlickQuery extends LogQuery[EventLog] with DatabaseConfig {
 
   }
 
+  override def queryEvent(eventType: EventType): Future[Seq[EventLog]] =
+    db.run(events.filter(_.event === eventType).result)
 }
+
+object LogQuery extends LogSlickQuery

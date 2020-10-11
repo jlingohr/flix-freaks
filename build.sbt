@@ -24,7 +24,10 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
   "com.lightbend.akka" %% "akka-stream-alpakka-csv" % "2.0.2",
   "com.lightbend.akka" %% "akka-stream-alpakka-slick" % "2.0.2",
-  "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion
+  "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
+
+  // Scalaz
+  "org.scalaz" %% "scalaz-core" % "7.3.2"
 )
 //
 //lazy val global = project
