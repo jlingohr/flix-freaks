@@ -13,7 +13,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import main.scala.common.repository.Events._
 
 
-class EventSlickRepository()(implicit ec: ExecutionContext) extends EventRepository with DatabaseConfig {
+class EventSlickRepository() extends EventRepository with DatabaseConfig {
   import EventMapper._
 
   def insert(log: EventLog): Future[Int] = db.run(events += log)
@@ -24,3 +24,5 @@ class EventSlickRepository()(implicit ec: ExecutionContext) extends EventReposit
 
   def getByEventType(eventType: EventType): Future[Seq[EventLog]] = db.run(events.filter(_.event === eventType).result)
 }
+
+object EventSlickRepository extends EventSlickRepository

@@ -1,4 +1,4 @@
-package main.scala.recommender.repository
+package main.scala.common.repository
 
 import scala.concurrent.Future
 

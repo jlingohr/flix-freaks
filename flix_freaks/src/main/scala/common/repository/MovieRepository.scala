@@ -1,6 +1,7 @@
 package repository
 
 import domain.Movie
+import main.scala.common.repository.MovieGenre
 
 import scala.concurrent.Future
 

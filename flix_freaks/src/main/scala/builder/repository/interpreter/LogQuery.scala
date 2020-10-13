@@ -1,7 +1,7 @@
 package main.scala.builder.repository.interpreter
 
 import config.DatabaseConfig
-import domain.{EventLog, EventType, UserId, addToList, details, genreView, moreDetails, play}
+import domain.{EventLog, EventType, UserId}
 import main.scala.builder.repository.LogQuery
 
 import scala.concurrent.Future

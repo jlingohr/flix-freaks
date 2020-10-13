@@ -11,10 +11,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class AggregatedUserEvent(userId: String, contentId: String, event: String, count: Int)
 
+import main.scala.builder.repository.interpreter.LogQuery._
 // TODO should be able to abstract out properly so not to depend on LogSlickQuery
 class ImplicitRatingCalculationInterpreter(w1: Int = 100, w2: Int = 50, w3: Int = 15)
                                           (implicit ec: ExecutionContext)
-  extends ImplicitRatingCalculation with LogSlickQuery {
+  extends ImplicitRatingCalculation {
 
   override def calculateImplicitRatingsForUser(userId: UserId): Future[Map[String, BigDecimal]] = {
     val data = queryAggregatedLogDataForUser(userId)

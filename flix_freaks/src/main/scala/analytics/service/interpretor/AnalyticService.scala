@@ -2,6 +2,7 @@ package service.interpretor
 
 import analytics.service.AnalyticService
 import domain._
+import main.scala.common.repository.MovieGenre
 import repository._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -48,12 +49,12 @@ class AnalyticServiceInterpreter(ratingService: RatingRepository,
   private def buildGenreStatistics(moviesWithGenres: Seq[(Movie, MovieGenre)],
                                   ratings: Map[String, Rating]): GenreStatistics = {
     val userAvg = if (ratings.nonEmpty) {
-      val ratingSum = ratings.foldLeft(0.0) {
+      val ratingSum = ratings.foldLeft(BigDecimal(0.0)) {
         case (acc, (id, rating)) => acc + rating.rating
       }
       ratingSum / ratings.size.toFloat
     } else {
-      0.0
+      BigDecimal(0.0)
     }
 
     val genreCounts = moviesWithGenres.map {
@@ -63,7 +64,7 @@ class AnalyticServiceInterpreter(ratingService: RatingRepository,
 
     val genreRatings = moviesWithGenres.foldLeft(Map[Int, BigDecimal]()) {
       case (acc, (movie, movieGenre)) => {
-        val rating = ratings.get(movie.movieId).map(_.rating - userAvg).getOrElse(0.0)
+        val rating = ratings.get(movie.movieId).map(_.rating - userAvg).getOrElse(BigDecimal(0.0))
         val updated = acc.getOrElse(movieGenre.genreId, BigDecimal(0)) + rating
         acc.updated(movieGenre.genreId, updated)
       }

@@ -10,16 +10,16 @@ import scala.concurrent.Future
 import main.scala.common.repository.Events._
 import main.scala.recommender.domain.EventCount
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
+import main.scala.common.repository.EventMapper._
 
 
 class EventSlickRepository extends EventRepository with DatabaseConfig {
 
-  def filterContentByEvent(event: EventType, take: Int): Future[Seq[EventCount]] = {
+
+  def filterContentByEvent(eventType: EventType, take: Int): Future[Seq[EventCount]] = {
     val query =
       events
-        .filter(_.event.equals(event))
+        .filter(_.event === eventType)
         .groupBy(_.contentId)
         .map {
           case (id, events) => (id, events.map(_.userId).length)
@@ -34,4 +34,4 @@ class EventSlickRepository extends EventRepository with DatabaseConfig {
   }
 }
 
-object EventRepository extends EventSlickRepository
+object EventSlickRepository extends EventSlickRepository

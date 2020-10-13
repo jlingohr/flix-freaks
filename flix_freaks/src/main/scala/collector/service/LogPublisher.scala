@@ -5,7 +5,7 @@ import java.time.Instant
 import akka.actor.typed.scaladsl.Behaviors
 import config.DatabaseConfig
 import domain.{EventLog, EventType}
-import repository.interpreter.EventSlickRepository.LogTable
+import main.scala.common.repository.LogTable
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.TableQuery
 

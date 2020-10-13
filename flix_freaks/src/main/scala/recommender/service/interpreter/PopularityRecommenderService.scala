@@ -9,7 +9,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 
 
-class PopularityRecommenderSlickService(ratingRepository: RatingRepository,
+class PopularityRecommenderSlickService(ratingRepository: RatingRepository[BigDecimal],
                                        logRepository: EventRepository)
                                        (implicit ec: ExecutionContext)
   extends PopularityRecommenderService[BigDecimal, RecommendedItem, EventCount] {
@@ -38,7 +38,7 @@ class PopularityRecommenderSlickService(ratingRepository: RatingRepository,
 
   override def predictScoreByRatings(itemId: String): Future[Option[BigDecimal]] = {
     val item = ratingRepository.getAvgRatingForItem(itemId)
-    item.map(_.getOrElse(BigDecimal(0)))
+    item.map(_.getOrElse(Some(BigDecimal(0))))
   }
 
 }

@@ -58,7 +58,7 @@ class AssociationRuleBuilderInterpreter extends AssociationRuleBuilder[EventLog,
     val oneItemSet = {
       temp.foldLeft(Map[Set[String], Int]()) {
         case (acc, (k, v)) =>
-          if (v > minSupport) {
+          if (v > minSupport * n) {
             acc + (k -> v)
           } else {
             acc
@@ -111,7 +111,7 @@ class AssociationRuleBuilderInterpreter extends AssociationRuleBuilder[EventLog,
                   val target = key.diff(source)
                   val support = BigDecimal(groupFreq.toDouble / n)
                   val confidence = BigDecimal(groupFreq.toDouble / sourceFreq)
-                  val associationRule = SeededRecommendation(timestamp, source.iterator.next(), target.iterator.next(), confidence, support)
+                  val associationRule = SeededRecommendation(timestamp, source.iterator.next(), target.iterator.next(), confidence, support, "association_rules")
                   associationRule :: inner
                 } else {
                   inner
