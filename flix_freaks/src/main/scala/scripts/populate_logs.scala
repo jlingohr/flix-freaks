@@ -1,4 +1,4 @@
-package scripts
+package main.scala.scripts
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer

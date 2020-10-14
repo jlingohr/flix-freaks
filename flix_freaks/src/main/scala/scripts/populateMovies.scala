@@ -1,4 +1,4 @@
-package scripts
+package main.scala.scripts
 
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
@@ -6,12 +6,11 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import domain.{Genre, Movie}
 import main.scala.common.repository.{GenreTable, MovieGenre, MovieGenreTable, MovieTable}
-import slick.jdbc.PostgresProfile.api._
 import slick.lifted.TableQuery
+import slick.jdbc.PostgresProfile.api._
 
-import scala.concurrent.duration.{Duration, DurationInt}
+import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
-import scala.language.postfixOps
 
 object populateMovies extends App {
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "SingleRequest")
@@ -26,7 +25,7 @@ object populateMovies extends App {
   val uri = "https://raw.githubusercontent.com/sidooms/MovieTweetings/master/latest/movies.dat"
 
   def downloadMovies(): Future[String] = {
-    val responseFuture: Future[HttpResponse] = Http().singleRequest(HttpRequest(uri=uri))
+    val responseFuture: Future[HttpResponse] = Http().singleRequest(HttpRequest(uri = uri))
 
     responseFuture
       .flatMap(_.entity.toStrict(2 seconds))
@@ -58,53 +57,53 @@ object populateMovies extends App {
   }
 
   val movieData = downloadMovies()
-  val moviesAndGenres = movieData.map {res =>
+  val moviesAndGenres = movieData.map { res =>
     res
       .split('\n')
       .flatMap(parseMovie)
   }
 
   try {
-    val resultFuture = moviesAndGenres.flatMap {res =>
-        // Bulk insert movies and genres
-        val movies = {
-          res.map {
-            case (movie, _) =>
-              movie
-          }
+    val resultFuture = moviesAndGenres.flatMap { res =>
+      // Bulk insert movies and genres
+      val movies = {
+        res.map {
+          case (movie, _) =>
+            movie
         }
-
-        val genres =
-          res
-            .flatMap {
-              case (_: Movie, genres: Array[Genre]) => genres
-            }.distinct
-
-        val insertMoviesQuery = movieTable ++= movies
-
-        val insertGenresWithInc = genreTable returning genreTable.map(_.id) into ((genre, id) => genre.copy(Some(id)))
-        val insertGenresQuery = insertGenresWithInc ++= genres
-
-        val insertAction = DBIO.seq(insertMoviesQuery, insertGenresQuery)
-        val insertFuture = db.run(insertAction)
-        val insertedGenres = insertFuture.flatMap{_ =>
-          db.run(genreTable.result).map(_.map(genre => genre.name -> genre.id).toMap)
-        }
-
-        // Use genres with ids to update MovieGenre table
-        insertedGenres.flatMap { insertedGenres =>
-            val movieWithGenres = res.flatMap {
-              case (movie, movieGenres) => movieGenres.map(genre => MovieGenre(movie.movieId, insertedGenres(genre.name).get))
-            }
-
-            val insertMovieGenreQuery = movieGenreTable ++= movieWithGenres
-            val insertMovieGenreAction = DBIO.seq(insertMovieGenreQuery)
-            db.run(insertMovieGenreAction)
-        }
-
       }
+
+      val genres =
+        res
+          .flatMap {
+            case (_: Movie, genres: Array[Genre]) => genres
+          }.distinct
+
+      val insertMoviesQuery = movieTable ++= movies
+
+      val insertGenresWithInc = genreTable returning genreTable.map(_.id) into ((genre, id) => genre.copy(Some(id)))
+      val insertGenresQuery = insertGenresWithInc ++= genres
+
+      val insertAction = DBIO.seq(insertMoviesQuery, insertGenresQuery)
+      val insertFuture = db.run(insertAction)
+      val insertedGenres = insertFuture.flatMap { _ =>
+        db.run(genreTable.result).map(_.map(genre => genre.name -> genre.id).toMap)
+      }
+
+      // Use genres with ids to update MovieGenre table
+      insertedGenres.flatMap { insertedGenres =>
+        val movieWithGenres = res.flatMap {
+          case (movie, movieGenres) => movieGenres.map(genre => MovieGenre(movie.movieId, insertedGenres(genre.name).get))
+        }
+
+        val insertMovieGenreQuery = movieGenreTable ++= movieWithGenres
+        val insertMovieGenreAction = DBIO.seq(insertMovieGenreQuery)
+        db.run(insertMovieGenreAction)
+      }
+
+    }
     Await.result(resultFuture, Duration.Inf)
-    } finally {
+  } finally {
     db.close
   }
 

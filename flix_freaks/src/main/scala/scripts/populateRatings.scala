@@ -1,11 +1,11 @@
-package scripts
+package main.scala.scripts
 
 import java.nio.file.Paths
 import java.time.Instant
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.alpakka.slick.scaladsl._
+import akka.stream.alpakka.slick.scaladsl.SlickSession
 import akka.stream.scaladsl.{Sink, Source}
 import domain.Rating
 import main.scala.common.repository.RatingTable
@@ -13,8 +13,6 @@ import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import scala.language.postfixOps
-
 
 object populateRatings extends App {
   implicit val system = ActorSystem()

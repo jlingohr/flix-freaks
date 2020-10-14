@@ -1,12 +1,13 @@
-package main.scala.builder.scripts
+package main.scala.scripts
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.alpakka.slick.scaladsl.SlickSession
-import main.scala.builder.service.interpreter.AssociationRuleBuilder._
+import main.scala.builder.service.interpreter.AssociationRuleBuilder.buildAssociationRules
+import main.scala.common.model.SeededRecs.seededRecs
+import slick.dbio.DBIO
 import slick.jdbc.JdbcBackend.Database
 import slick.jdbc.PostgresProfile.api._
-import main.scala.common.model.SeededRecs._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -25,8 +26,8 @@ object RulerBuilder extends App {
   val doneFuture = associationRules.flatMap { rules =>
     db.run(
       DBIO.seq(
-//      seededRecs.schema.create,
-      seededRecs ++= rules
+        //      seededRecs.schema.create,
+        seededRecs ++= rules
       )
     )
   }
