@@ -2,8 +2,8 @@ package main.scala.recommender.application
 
 import domain.{Movie, Rating, UserId}
 import main.scala.common.domain.SeededRecommendation
-import main.scala.recommender.domain.{ChartRecommendation, EventCount, Jaccard, Pearson, RecommendedItem, SimilarUsersCalculation, SimilarityMethod}
-import main.scala.recommender.repository.RatingRepository
+import main.scala.recommender.domain.{AssociationRule, ChartRecommendation, EventCount, Jaccard, Pearson, RecommendedItem, SimilarUsersCalculation, SimilarityMethod}
+import main.scala.recommender.repository.{EventRepository, RatingRepository, RecommendationRepository}
 import main.scala.recommender.service.PopularityRecommenderService
 import repository.MovieRepository
 
@@ -11,12 +11,27 @@ import scala.concurrent.{ExecutionContext, Future}
 import main.scala.recommender.service.interpreter.SimilarityCalculation._
 
 
-
 class HttpHandler(popularityRecommenderService: PopularityRecommenderService[BigDecimal, RecommendedItem, EventCount],
                  movieRepository: MovieRepository,
-                 ratingRepository: RatingRepository[Rating])
+                 ratingRepository: RatingRepository[Rating],
+                 recsRepository: RecommendationRepository[SeededRecommendation],
+                 eventRepository: EventRepository)
                  (implicit ec: ExecutionContext)
-  extends RestService[SimilarityMethod, Any, ChartRecommendation, SimilarUsersCalculation, SeededRecommendation, RecommendedItem] {
+  extends RestService[SimilarityMethod, Any, ChartRecommendation, SimilarUsersCalculation, SeededRecommendation, AssociationRule] {
+
+  override def getAssociationRulesFor(contentId: String, take: Int): Future[Seq[SeededRecommendation]] = {
+    recsRepository.getBySourceId(contentId, take)
+  }
+
+  override def recsUsingAssociationRules(userId: UserId, take: Int): Future[Seq[AssociationRule]] = {
+    val events = eventRepository.getEventsForUser(userId)
+    val rules = for {
+      e <- events
+      r <- recsRepository.getBySourceIn(e.take(20).toSet)
+    } yield formatRules(r)
+
+    rules
+  }
 
   // TODO should cache this result on a daily basis so as not to always make an expensive call
   override def chart(take: Int): Future[Seq[ChartRecommendation]] = {
@@ -52,7 +67,10 @@ class HttpHandler(popularityRecommenderService: PopularityRecommenderService[Big
 
   override def recsBPR(userId: UserId, take: Int): Future[Any] = ???
 
-  override def recsPopular(userId: UserId, take: Int): Future[Any] = ???
+  override def recsPopular(userId: UserId, take: Int=60): Future[Seq[RecommendedItem]] = {
+    val topNum = popularityRecommenderService.recommendItems(userId, take)
+    topNum
+  }
 
   def buildChart(items: Seq[EventCount], movies: Seq[Movie]): Seq[ChartRecommendation] = {
     val movieChart = movies.map {
@@ -66,7 +84,6 @@ class HttpHandler(popularityRecommenderService: PopularityRecommenderService[Big
             val title = movieChart.getOrElse(movieId, "")
             ChartRecommendation(movieId, title)
           }
-
         }
     sortedItems
   }
@@ -128,10 +145,12 @@ class HttpHandler(popularityRecommenderService: PopularityRecommenderService[Big
     SimilarUsersCalculation(userId, numRated, method, topN, topN)
   }
 
-  override def getAssociationRulesFor(contentId: String, take: Int): Future[Seq[SeededRecommendation]] = ???
-
-  override def recsUsingAssociationRules(userId: UserId, take: Int): Future[Seq[RecommendedItem]] = ???
+  def formatRules(rules: Seq[(String, Option[BigDecimal])]): Seq[AssociationRule] = {
+    rules.map(tup => AssociationRule(tup._1, tup._2))
+  }
 }
+
+
 
 
 
