@@ -17,3 +17,5 @@ Current development uses the following:
 ## Getting Started
 First, modify `resources/application.conf` to include your updated database configuration properties. Once your database connection is setup you
 need to populate the tables with data to bootstrap the algorithms. Run all modules in `scripts` to do so. Once the database is setup and the tables populated, each package can be run seperately by running the file in the modules `app` package.
+
+Alternatively, since each module is designed independently, you may choose to configure a seperate `application.conf` file for each module.
