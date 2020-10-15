@@ -1,12 +1,12 @@
-package main.scala.common.repository
+package main.scala.common.model
 
 import java.sql.Timestamp
 import java.time.Instant
 import java.util.Date
 
 import domain.Rating
-import slick.lifted.Tag
 import slick.jdbc.PostgresProfile.api._
+import slick.lifted.Tag
 
 
 object DateMapper {

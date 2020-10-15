@@ -8,7 +8,7 @@ import akka.stream.ActorMaterializer
 import akka.stream.alpakka.slick.scaladsl.SlickSession
 import akka.stream.scaladsl.{Sink, Source}
 import domain.Rating
-import main.scala.common.repository.RatingTable
+import main.scala.common.model.RatingTable
 import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.Await

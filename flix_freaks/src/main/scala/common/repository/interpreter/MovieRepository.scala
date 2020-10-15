@@ -2,9 +2,9 @@ package repository.interpreter
 
 import config.DatabaseConfig
 import domain.Movie
-import main.scala.common.repository.MovieGenre
-import main.scala.common.repository.MovieGenres._
-import main.scala.common.repository.Movies._
+import main.scala.common.model.MovieGenre
+import main.scala.common.model.MovieGenres._
+import main.scala.common.model.Movies._
 import repository.MovieRepository
 import slick.dbio.NoStream
 import slick.jdbc.PostgresProfile.api._
@@ -12,7 +12,7 @@ import slick.sql.SqlAction
 
 import scala.concurrent.Future
 
-trait MovieSlickRepository extends MovieRepository with DatabaseConfig {
+trait MovieSlickRepository extends MovieRepository[Future] with DatabaseConfig {
 
 
   implicit def executeFromDb[A](action: SqlAction[A, NoStream, _ <: slick.dbio.Effect]): Future[A] = {

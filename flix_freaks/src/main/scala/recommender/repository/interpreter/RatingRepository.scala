@@ -6,7 +6,7 @@ import slick.jdbc.PostgresProfile.api._
 import slick.lifted.TableQuery
 
 import scala.concurrent.Future
-import main.scala.common.repository.Ratings._
+import main.scala.common.model.Ratings._
 import main.scala.recommender.repository.RatingRepository
 
 class RatingSlickRepository extends RatingRepository[Rating] with DatabaseConfig {

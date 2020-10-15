@@ -2,7 +2,7 @@ package repository.interpreter
 
 import config.DatabaseConfig
 import domain.{Rating, UserId}
-import main.scala.common.repository.Ratings._
+import main.scala.common.model.Ratings._
 import repository.RatingRepository
 import slick.jdbc.PostgresProfile.api._
 

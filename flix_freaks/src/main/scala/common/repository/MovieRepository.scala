@@ -1,26 +1,26 @@
 package repository
 
 import domain.Movie
-import main.scala.common.repository.MovieGenre
+import main.scala.common.model.MovieGenre
 
 import scala.concurrent.Future
 
-trait MovieRepository {
+trait MovieRepository[F[_]] {
 
-  def findAll: Future[Seq[Movie]]
+  def findAll: F[Seq[Movie]]
 
-  def create(movie: Movie): Future[String]
+  def create(movie: Movie): F[String]
 
-  def findById(movieID: String): Future[Option[Movie]]
+  def findById(movieID: String): F[Option[Movie]]
 
-  def delete(movieId: String): Future[Int]
+  def delete(movieId: String): F[Int]
 
-  def movieWithGenres(movieId: String): Future[Seq[(Movie, MovieGenre)]]
+  def movieWithGenres(movieId: String): F[Seq[(Movie, MovieGenre)]]
 
-  def moviesWithGenres(movieIds: Set[String]): Future[Seq[(Movie, MovieGenre)]]
+  def moviesWithGenres(movieIds: Set[String]): F[Seq[(Movie, MovieGenre)]]
 
-  def moviesByGenre(genreId: Int): Future[Seq[Movie]]
+  def moviesByGenre(genreId: Int): F[Seq[Movie]]
 
-  def findAllByIds(movieIds: Set[String]): Future[Seq[Movie]]
+  def findAllByIds(movieIds: Set[String]): F[Seq[Movie]]
 
 }

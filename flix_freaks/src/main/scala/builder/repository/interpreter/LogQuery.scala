@@ -6,8 +6,8 @@ import main.scala.builder.repository.LogQuery
 
 import scala.concurrent.Future
 import slick.jdbc.PostgresProfile.api._
-import main.scala.common.repository.Events._
-import main.scala.common.repository.EventMapper._
+import main.scala.common.model.Events._
+import main.scala.common.model.EventMapper._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 

@@ -1,7 +1,7 @@
-package main.scala.common.repository
+package main.scala.common.model
 
-import slick.lifted.Tag
 import slick.jdbc.PostgresProfile.api._
+import slick.lifted.Tag
 
 
 case class MovieGenre(movieId: String, genreId: Int)

@@ -2,7 +2,7 @@ package service.interpretor
 
 import analytics.service.AnalyticService
 import domain._
-import main.scala.common.repository.MovieGenre
+import main.scala.common.model.MovieGenre
 import repository._
 
 import scala.concurrent.ExecutionContext.Implicits.global

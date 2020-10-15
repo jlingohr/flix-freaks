@@ -3,52 +3,19 @@ package app
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
-import domain.{Genre, Movie, MovieDetail}
-import services.MovieService
-import spray.json.{DefaultJsonProtocol, RootJsonFormat}
-// for JSON serialization/deserialization following dependency is required:
-// "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.7"
+import main.scala.flix_freaks.akkahttp.akkahttp.QueryRoute
+import main.scala.flix_freaks.service.interpreter.MovieService
+
 import scala.io.StdIn
 
-trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
-  implicit val movieFormat: RootJsonFormat[Movie] = jsonFormat3(Movie)
-  implicit val genreFormat: RootJsonFormat[Genre] = jsonFormat2(Genre)
-  implicit val movieDetailFormat: RootJsonFormat[MovieDetail] = jsonFormat2(MovieDetail)
-}
-
-object FlixFreaks extends App with JsonSupport {
+object FlixFreaks extends App {
   implicit val system = ActorSystem(Behaviors.empty,"flix-freaks")
   implicit val executionContext = system.executionContext
 
   val movieService = new MovieService()
+  val routes = new QueryRoute(movieService)
 
-  val route: Route =
-    concat(
-      get {
-        pathPrefix("movie" / """\d+""".r) { id =>
-          // there might be no item for a given id
-          val movieDetail = movieService.getMovieDetails(id)
-
-          onSuccess(movieDetail) { item =>
-            complete(item)
-          }
-        }
-      },
-      get {
-        pathPrefix("genre" / IntNumber) { id =>
-          val movies = movieService.getMoviesByGenre(id)
-
-          onSuccess(movies) { items =>
-            complete(items)
-          }
-        }
-      }
-    )
-
-  val bindingFuture = Http().newServerAt("localhost", 8080).bind(route)
+  val bindingFuture = Http().newServerAt("localhost", 8080).bind(routes.routes)
 
   println(s"Server online at http://localhost:8080/\n Press RETURN to stop...")
   StdIn.readLine()

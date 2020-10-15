@@ -2,7 +2,7 @@ package repository.interpreter
 
 import config.DatabaseConfig
 import domain.Genre
-import main.scala.common.repository.Genres._
+import main.scala.common.model.Genres._
 import repository.GenreRepository
 import slick.dbio.NoStream
 import slick.jdbc.PostgresProfile.api._

@@ -1,4 +1,4 @@
-package services
+package main.scala.flix_freaks.service.interpreter
 
 import domain.{Movie, MovieDetail}
 import repository.interpreter.{GenreSlickRepository, MovieSlickRepository}
@@ -12,7 +12,7 @@ class MovieService()(implicit ec: ExecutionContext){
     val genres = GenreSlickRepository.findAll
     val movieWithGenres = MovieSlickRepository.movieWithGenres(movieId)
 
-    movie.flatMap(movie => movie match {
+    movie.flatMap {
       case Some(movie) => {
         val movieDetail = for {
           genres <- genres
@@ -21,8 +21,10 @@ class MovieService()(implicit ec: ExecutionContext){
 
         movieDetail
       }
-      case None => Future { None }
-    })
+      case None => Future {
+        None
+      }
+    }
   }
 
   def getMoviesByGenre(genreId: Int): Future[Seq[Movie]] = {

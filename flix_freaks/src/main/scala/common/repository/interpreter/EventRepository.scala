@@ -4,13 +4,13 @@ import java.time.Instant
 
 import config.DatabaseConfig
 import domain._
-import main.scala.common.repository.EventMapper
+import main.scala.common.model.EventMapper
 import repository.EventRepository
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.{Query, Tag}
 
 import scala.concurrent.{ExecutionContext, Future}
-import main.scala.common.repository.Events._
+import main.scala.common.model.Events._
 
 
 class EventSlickRepository() extends EventRepository with DatabaseConfig {

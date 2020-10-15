@@ -1,8 +1,8 @@
-package main.scala.common.repository
+package main.scala.common.model
 
 import domain.Movie
-import slick.lifted.Tag
 import slick.jdbc.PostgresProfile.api._
+import slick.lifted.Tag
 
 
 class MovieTable(tag: Tag) extends Table[Movie](tag, "movie") {

@@ -1,10 +1,10 @@
-package main.scala.common.repository
+package main.scala.common.model
 
 import java.time.Instant
 
-import domain.{EventLog, EventType, addToList, details, genreView, moreDetails, play}
-import slick.lifted.Tag
+import domain._
 import slick.jdbc.PostgresProfile.api._
+import slick.lifted.Tag
 
 
 object EventMapper {

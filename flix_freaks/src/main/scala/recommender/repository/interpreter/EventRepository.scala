@@ -7,9 +7,9 @@ import slick.jdbc.PostgresProfile.api._
 import slick.lifted.TableQuery
 
 import scala.concurrent.Future
-import main.scala.common.repository.Events._
+import main.scala.common.model.Events._
 import main.scala.recommender.domain.EventCount
-import main.scala.common.repository.EventMapper._
+import main.scala.common.model.EventMapper._
 
 
 class EventSlickRepository extends EventRepository with DatabaseConfig {

@@ -5,7 +5,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import domain.{Genre, Movie}
-import main.scala.common.repository.{GenreTable, MovieGenre, MovieGenreTable, MovieTable}
+import main.scala.common.model.{GenreTable, MovieGenre, MovieGenreTable, MovieTable}
 import slick.lifted.TableQuery
 import slick.jdbc.PostgresProfile.api._
 
