@@ -1,5 +1,8 @@
 package main.scala.recommender.application
 
+import domain.UserId
+import main.scala.recommender.domain.RecommendedItem
+
 import scala.concurrent.Future
 
 
@@ -9,5 +12,7 @@ trait RestService[Method, RecommenderResponse, ChartRecommendation, SimilarUsers
   with PersonalizedCalculation[RecommenderResponse] {
 
   def chart(take: Int=10): Future[Seq[ChartRecommendation]]
+
+  def recsPopular(userId: UserId, take: Int=60): Future[Seq[RecommendedItem]]
 
 }

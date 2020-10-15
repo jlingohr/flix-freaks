@@ -16,6 +16,4 @@ trait PersonalizedCalculation[RecommenderResponse] {
 
   def recsBPR(userId: UserId, take: Int=6): Future[RecommenderResponse]
 
-  def recsPopular(userId: UserId, take: Int=60): Future[RecommenderResponse]
-
 }

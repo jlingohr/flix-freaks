@@ -17,7 +17,7 @@ class HttpHandler(popularityRecommenderService: PopularityRecommenderService[Big
                  recsRepository: RecommendationRepository[SeededRecommendation],
                  eventRepository: EventRepository)
                  (implicit ec: ExecutionContext)
-  extends RestService[SimilarityMethod, Any, ChartRecommendation, SimilarUsersCalculation, SeededRecommendation, AssociationRule] {
+  extends RestService[SimilarityMethod, RecommendedItem, ChartRecommendation, SimilarUsersCalculation, SeededRecommendation, AssociationRule] {
 
   override def getAssociationRulesFor(contentId: String, take: Int): Future[Seq[SeededRecommendation]] = {
     recsRepository.getBySourceId(contentId, take)
@@ -55,17 +55,17 @@ class HttpHandler(popularityRecommenderService: PopularityRecommenderService[Big
     similarUsers
   }
 
-  override def similarContent(contentId: String, take: Int): Future[Any] = ???
+  override def similarContent(contentId: String, take: Int): Future[RecommendedItem] = ???
 
-  override def recsContentBased(userId: UserId, take: Int): Future[Any] = ???
+  override def recsContentBased(userId: UserId, take: Int): Future[RecommendedItem] = ???
 
-  override def recsCF(userId: UserId, take: Int): Future[Any] = ???
+  override def recsCF(userId: UserId, take: Int): Future[RecommendedItem] = ???
 
-  override def recsSVD(userId: UserId, take: Int): Future[Any] = ???
+  override def recsSVD(userId: UserId, take: Int): Future[RecommendedItem] = ???
 
-  override def recsFWLS(userId: UserId, take: Int): Future[Any] = ???
+  override def recsFWLS(userId: UserId, take: Int): Future[RecommendedItem] = ???
 
-  override def recsBPR(userId: UserId, take: Int): Future[Any] = ???
+  override def recsBPR(userId: UserId, take: Int): Future[RecommendedItem] = ???
 
   override def recsPopular(userId: UserId, take: Int=60): Future[Seq[RecommendedItem]] = {
     val topNum = popularityRecommenderService.recommendItems(userId, take)
