@@ -1,12 +1,21 @@
 # flix-freaks
 
 This repo contains the backend services for a simple movie recommender system. The system makes recommendations based on the popularity of content of
-other users as well as tracking user behavior to compute implicit ratings for users. The services are split into seperate packages:
+other users as well as tracking user behavior to compute implicit ratings for users. The services are split into seperate packages and are designed to run
+as microservices in order to prevent long-running queries from bottlenecking the system:
 1) analytics: allows admin users to query the popularity of content as well as analyze the behavior of individual users
-2) builder: handles requests to build build implicit recommendations
-3) collector: logs user behaviors in order to make recommendations
-4) flix_freaks: main API to view available movies and recommendations
-5) recommender: services to provide personalized recommendations
+2) builder: services to build recommendations in an off-line setting
+3) collector: logs user behaviors as events from which the builder can build new recommendations
+4) flix_freaks: main API to view available movies and movie details
+5) recommender: services to provide personalized and non-personalized recommendations. Non-personalized recommendations are based off of popularity and
+movie similarity. Personalized recommendations are generated from a user's explicit movie ratings or implicit behavior.
+
+### Note Design Decisions
+
+Resource limitations have led to certain design decisions which I will note here:
+1) Rather than use PostgreSQL for all data, it would be more appropriate to store user events in a seperate DB such as Kafka since these events
+would come it at a much higher rate and require writes, which could block other services from reading
+
 
 ## Prerequisites
 Current development uses the following:
