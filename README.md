@@ -10,7 +10,7 @@ as microservices in order to prevent long-running queries from bottlenecking the
 5) recommender: services to provide personalized and non-personalized recommendations. Non-personalized recommendations are based off of popularity and
 movie similarity. Personalized recommendations are generated from a user's explicit movie ratings or implicit behavior.
 
-### Note Design Decisions
+### Note on Design Decisions
 
 Resource limitations have led to certain design decisions which I will note here:
 1) Rather than use PostgreSQL for all data, it would be more appropriate to store user events in a seperate DB such as Kafka since these events
