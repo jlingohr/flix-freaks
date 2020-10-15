@@ -12,7 +12,10 @@ movie similarity. Personalized recommendations are generated from a user's expli
 
 ### Note on Design Decisions
 
-Resource limitations have led to certain design decisions which I will note here:
+FlixFreaks has the following architectural design:
+![](FlixFreaks.png)
+
+However, resource limitations have led to certain design decisions which I will note here:
 1) Rather than use PostgreSQL for all data, it would be more appropriate to store user events in a seperate DB such as Kafka since these events
 would come it at a much higher rate and require writes, which could block other services from reading
 
