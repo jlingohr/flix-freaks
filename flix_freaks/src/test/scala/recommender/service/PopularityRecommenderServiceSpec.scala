@@ -1,25 +1,18 @@
 package test.scala.recommender.service
 
-import main.scala.recommender.domain.{EventCount, RecommendedItem}
+import cats.arrow.FunctionK
+import cats.implicits._
+import domain.UserId
+import main.scala.recommender.domain.RecommendedItem
 import main.scala.recommender.repository.{EventRepository, RatingRepository}
 import main.scala.recommender.service.RecommenderService
 import main.scala.recommender.service.interpreter.PopularityRecommenderSlickService
-import org.mockito.MockitoSugar.{mock, when}
+import org.mockito.IdiomaticMockito
+import org.mockito.MockitoSugar.when
 import org.scalatest.funspec.AnyFunSpec
-import org.scalatest.matchers.should
-import cats.implicits._
-import cats.{Eval, MonadError}
-import cats.arrow.FunctionK
-import domain.UserId
-import org.mockito.ArgumentMatchers._
-import org.mockito.cats.MockitoCats.whenF
 
-import scala.concurrent.Future
-import scala.util.{Success, Try}
 import scala.concurrent.ExecutionContext.Implicits.global
-
-import org.mockito.invocation.InvocationOnMock
-import org.mockito.{ ArgumentMatchersSugar, IdiomaticMockito }
+import scala.concurrent.Future
 
 
 

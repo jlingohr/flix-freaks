@@ -26,7 +26,7 @@ object SimilarityCalculation extends SimilarityCalculation[UserId, BigDecimal] {
       val thatUserRatings = users.get(thatUser.value).map(_.keys.toSet).getOrElse(Set.empty)
       val intersect = thisUserRatings.intersect(thatUserRatings)
       val union = thisUserRatings.union(thatUserRatings)
-      val iou = intersect.size / union.size
+      val iou = intersect.size / union.size.toDouble
       BigDecimal(iou)
     } else {
       BigDecimal(0)
