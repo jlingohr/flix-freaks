@@ -9,7 +9,9 @@ import analytics.service.AnalyticService
 import domain.UserId
 import json.SprayJsonCodes
 
-class QueryRoute(service: AnalyticService)(implicit system: ActorSystem[_]) extends SprayJsonCodes {
+import scala.concurrent.Future
+
+class QueryRoute(service: AnalyticService[Future])(implicit system: ActorSystem[_]) extends SprayJsonCodes {
 
   def routes: Route = {
     val route = concat (

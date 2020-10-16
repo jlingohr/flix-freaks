@@ -2,16 +2,15 @@ package repository
 
 import domain.{ContentId, EventLog, EventType, UserId}
 
-import scala.concurrent.Future
 
-trait EventRepository {
+trait EventRepository[F[_]] {
 
-  def insert(log: EventLog): Future[Int]
+  def insert(log: EventLog): F[Int]
 
-  def getByUserId(userId: UserId): Future[Seq[EventLog]]
+  def getByUserId(userId: UserId): F[Seq[EventLog]]
 
-  def getByContentId(contentId: ContentId): Future[Seq[EventLog]]
+  def getByContentId(contentId: ContentId): F[Seq[EventLog]]
 
-  def getByEventType(eventType: EventType): Future[Seq[EventLog]]
+  def getByEventType(eventType: EventType): F[Seq[EventLog]]
 
 }

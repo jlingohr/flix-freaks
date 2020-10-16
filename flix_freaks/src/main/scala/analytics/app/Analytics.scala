@@ -4,16 +4,46 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akkahttp.QueryRoute
+import analytics.service.AnalyticService
+import cats.implicits.catsStdInstancesForFuture
+import com.typesafe.config.ConfigFactory
+import main.scala.common.db.{AbstractModel, DatabaseSupportFutureImpl}
+import main.scala.common.db.SlickSupport.dbioTransformation
 import repository.interpreter.{EventSlickRepository, GenreSlickRepository, MovieSlickRepository, RatingSlickRepository}
 import service.interpretor.AnalyticServiceInterpreter
+import slick.backend.DatabaseConfig
+import slick.jdbc.JdbcProfile
+import com.rms.miu.slickcats.DBIOInstances._
+import slick.dbio.DBIO
 
+import scala.concurrent.Future
 import scala.io.StdIn
+
 
 object Analytics extends App {
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty,"flix-analytics")
   implicit val executionContext = system.executionContext
 
-  val service = new AnalyticServiceInterpreter(RatingSlickRepository, MovieSlickRepository, EventSlickRepository, GenreSlickRepository)
+  private val config = ConfigFactory.load()
+  private val databaseConfig = config.getConfig("database")
+  private lazy val localDb = DatabaseConfig.forConfig[JdbcProfile]("database")
+
+  private lazy val databaseModel = new AbstractModel {
+    override val databaseProfile: JdbcProfile = localDb.profile
+  }
+
+  private object databaseSupport extends DatabaseSupportFutureImpl[databaseModel.type] {
+    override def db: JdbcProfile#Backend#Database = db
+    override val model: databaseModel.type = databaseModel
+  }
+  lazy val evalDb = dbioTransformation(databaseSupport)
+
+  val ratingRepository = new RatingSlickRepository
+  val movieRepository = new MovieSlickRepository
+  val eventRepository = new EventSlickRepository
+  val genreRepository = new GenreSlickRepository
+  val service: AnalyticService[Future] =
+    new AnalyticServiceInterpreter[Future, DBIO](ratingRepository, movieRepository, eventRepository, genreRepository, evalDb)
 
   val routes = new QueryRoute(service)
 

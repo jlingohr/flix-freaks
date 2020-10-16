@@ -4,10 +4,10 @@ import domain.{Rating, UserId}
 
 import scala.concurrent.Future
 
-trait RatingRepository {
+trait RatingRepository[F[_]] {
 
-  def getByUser(userId: UserId): Future[Seq[Rating]]
+  def getByUser(userId: UserId): F[Seq[Rating]]
 
-  def getByMovie(movieId: String): Future[Seq[Rating]]
+  def getByMovie(movieId: String): F[Seq[Rating]]
 
 }

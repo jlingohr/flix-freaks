@@ -1,18 +1,16 @@
 package repository.interpreter
 
-import config.DatabaseConfig
 import domain.{Rating, UserId}
 import main.scala.common.model.Ratings._
 import repository.RatingRepository
 import slick.jdbc.PostgresProfile.api._
 
-import scala.concurrent.Future
 
-trait RatingSlickRepository extends RatingRepository with DatabaseConfig {
+class RatingSlickRepository extends RatingRepository[DBIO] {
 
-  override def getByUser(userId: UserId): Future[Seq[Rating]] = db.run(ratings.filter(_.userId === userId.value).result)
+  override def getByUser(userId: UserId): DBIO[Seq[Rating]] = ratings.filter(_.userId === userId.value).result
 
-  override def getByMovie(movieId: String): Future[Seq[Rating]] = db.run(ratings.filter(_.movieId === movieId).result)
+  override def getByMovie(movieId: String): DBIO[Seq[Rating]] = ratings.filter(_.movieId === movieId).result
 }
 
 object RatingSlickRepository extends RatingSlickRepository

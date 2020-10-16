@@ -4,10 +4,10 @@ import domain.{ContentAnalytics, ContentId, UserAnalytics, UserId}
 
 import scala.concurrent.Future
 
-trait AnalyticService {
+trait AnalyticService[F[_]] {
 
-  def getUserAnalytics(userId: UserId): Future[UserAnalytics]
+  def getUserAnalytics(userId: UserId): F[UserAnalytics]
 
-  def getContentAnalytics(contentId: ContentId): Future[ContentAnalytics]
+  def getContentAnalytics(contentId: ContentId): F[ContentAnalytics]
 
 }

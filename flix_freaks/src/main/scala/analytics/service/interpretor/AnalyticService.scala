@@ -1,28 +1,31 @@
 package service.interpretor
 
 import analytics.service.AnalyticService
+import cats.{Monad, MonadError, ~>}
 import domain._
 import main.scala.common.model.MovieGenre
 import repository._
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import cats.implicits._
 
 
-class AnalyticServiceInterpreter(ratingService: RatingRepository,
-                                 movieService: MovieRepository,
-                                 logService: EventRepository,
-                                 genreService: GenreRepository) extends AnalyticService {
+class AnalyticServiceInterpreter[F[_], DbEffect[_]](ratingService: RatingRepository[DbEffect],
+                                                    movieService: MovieRepository[DbEffect],
+                                                    logService: EventRepository[DbEffect],
+                                                    genreService: GenreRepository[DbEffect],
+                                                   evalDb: DbEffect ~> F)
+                                                   (implicit mMonadError: MonadError[F, Throwable],
+                                                   dbEffectMonad: Monad[DbEffect])
+  extends AnalyticService[F] {
 
-  override def getUserAnalytics(userId: UserId): Future[UserAnalytics] = {
-    val userRatings = ratingService.getByUser(userId)
+  override def getUserAnalytics(userId: UserId): F[UserAnalytics] = {
+    val userRatings = evalDb(ratingService.getByUser(userId))
     val movies = userRatings.flatMap { ur =>
-      movieService.findAllByIds(ur.map(_.movieId).toSet)
+      evalDb(movieService.findAllByIds(ur.map(_.movieId).toSet))
     }
     val moviesWithGenres = movies.flatMap { movies =>
-      movieService.moviesWithGenres(movies.map(_.movieId).toSet)
+      evalDb(movieService.moviesWithGenres(movies.map(_.movieId).toSet))
     }
-    val log = logService.getByUserId(userId)
+    val log = evalDb(logService.getByUserId(userId))
     val userAnalytics = for {
       ur <- userRatings
       l <- log
@@ -38,7 +41,7 @@ class AnalyticServiceInterpreter(ratingService: RatingRepository,
     userAnalytics
   }
 
-  override def getContentAnalytics(contentId: ContentId): Future[ContentAnalytics] = ???
+  override def getContentAnalytics(contentId: ContentId): F[ContentAnalytics] = ???
 
   private def buildMovieDTOs(movies: Seq[Movie],
                              ratings: Map[String, Rating]) = {
