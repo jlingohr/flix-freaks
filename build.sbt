@@ -27,77 +27,12 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
 
   // Scalaz
-  "org.scalaz" %% "scalaz-core" % "7.3.2"
+  "org.scalaz" %% "scalaz-core" % "7.3.2",
+
+  // Cats
+  "org.typelevel" %% "cats-core" % "2.0.0",
+  "com.rms.miu" %% "slick-cats" % "0.10.1"
+
 )
-//
-//lazy val global = project
-//  .in(file("."))
-//  .aggregate(
-//    common,
-//    analytics,
-//    flix_freaks,
-//    collector
-//  )
-//
-//lazy val common = project.settings(
-//  name := "common",
-//  libraryDependencies ++= commonDependencies
-//)
-//
-//lazy val analytics = project.settings(
-//  name := "analytics",
-//  libraryDependencies ++= commonDependencies ++ Seq(
-//    // Spray
-//    "io.spray" %% "spray-json" % "1.3.5",
-//
-//    "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
-//    "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
-//    "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion
-//  )
-//).dependsOn(
-//  common
-//)
-//
-//
-//lazy val collector = project.settings(
-//  name := "collector",
-//  libraryDependencies ++= commonDependencies ++ Seq(
-//    // Spray
-//    "io.spray" %% "spray-json" % "1.3.5",
-//
-//    "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
-//    "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
-//    "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion
-//  )
-//).dependsOn(
-//  common
-//)
-//
-//lazy val flix_freaks = project.settings(
-//  name := "flix-freaks",
-//  libraryDependencies ++= commonDependencies ++ Seq(
-//    // Spray
-//    "io.spray" %% "spray-json" % "1.3.5",
-//
-//    "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
-//    "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
-//    "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion
-//  )
-//).dependsOn(
-//  common
-//)
-//
-//// Dependencies
-//
-//lazy val commonDependencies = Seq(
-//  "com.typesafe.slick" %% "slick" % slickVersion,
-//  "org.slf4j" % "slf4j-nop" % "1.6.4",
-//  "com.typesafe.slick" %% "slick-hikaricp" % "3.3.3",
-//  "org.postgresql" % "postgresql" % "42.2.16",
-//
-//  //Akka
-//  "com.typesafe.akka" %% "akka-stream" % akkaVersion,
-//  "com.lightbend.akka" %% "akka-stream-alpakka-csv" % "2.0.2",
-//  "com.lightbend.akka" %% "akka-stream-alpakka-slick" % "2.0.2",
-//
-//)
+
+scalacOptions += "-Ypartial-unification"

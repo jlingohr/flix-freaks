@@ -2,16 +2,14 @@ package repository
 
 import domain.Genre
 
-import scala.concurrent.Future
+trait GenreRepository[F[_]] {
 
-trait GenreRepository {
+  def findAll: F[Seq[Genre]]
 
-  def findAll: Future[Seq[Genre]]
+  def create(genre: Genre): F[Int]
 
-  def create(genre: Genre): Future[Int]
+  def findById(genreId: Int): F[Genre]
 
-  def findById(genreId: Int): Future[Genre]
-
-  def delete(genreId: Int): Future[Int]
+  def delete(genreId: Int): F[Int]
 
 }

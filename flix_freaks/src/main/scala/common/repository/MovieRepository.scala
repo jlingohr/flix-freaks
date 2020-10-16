@@ -3,8 +3,6 @@ package repository
 import domain.Movie
 import main.scala.common.model.MovieGenre
 
-import scala.concurrent.Future
-
 trait MovieRepository[F[_]] {
 
   def findAll: F[Seq[Movie]]

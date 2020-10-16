@@ -4,7 +4,7 @@ import domain.{Movie, MovieDetail}
 
 trait MovieService[F[_]] {
 
-  def getMovieDetails(movieId: String): F[MovieDetail]
+  def getMovieDetails(movieId: String): F[Option[MovieDetail]]
   def getMoviesByGenre(genreId: Int): F[Seq[Movie]]
 
 }

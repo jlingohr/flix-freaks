@@ -1,34 +1,37 @@
 package main.scala.flix_freaks.service.interpreter
 
+
+import cats.{Monad, ~>}
 import domain.{Movie, MovieDetail}
-import repository.interpreter.{GenreSlickRepository, MovieSlickRepository}
+import main.scala.flix_freaks.service.MovieService
+import repository.{GenreRepository, MovieRepository}
+import cats.implicits._
+import cats.MonadError
 
-import scala.concurrent.{ExecutionContext, Future}
 
-class MovieService()(implicit ec: ExecutionContext){
+class MovieServiceInterpreter[F[_], DbEffect[_]](movieRepository: MovieRepository[DbEffect],
+                                                genreRepository: GenreRepository[DbEffect],
+                                                evalDb: DbEffect ~> F)
+                                                (implicit mMonadError: MonadError[F, Throwable],
+                                                 dbEffectMonad: Monad[DbEffect])
+  extends MovieService[F] {
 
-  def getMovieDetails(movieId: String): Future[Option[MovieDetail]] = {
-    val movie = MovieSlickRepository.findById(movieId)
-    val genres = GenreSlickRepository.findAll
-    val movieWithGenres = MovieSlickRepository.movieWithGenres(movieId)
+  def getMovieDetails(movieId: String): F[Option[MovieDetail]] = {
+    val movie = evalDb(movieRepository.findById(movieId))
+    val genres = evalDb(genreRepository.findAll)
+    val movieWithGenres = evalDb(movieRepository.movieWithGenres(movieId))
 
-    movie.flatMap {
-      case Some(movie) => {
-        val movieDetail = for {
-          genres <- genres
-          mwg <- movieWithGenres.map(_.map(_._2).map(_.genreId)) //TODO better way than map 3 times...
-        } yield Some(domain.MovieDetail(movie, genres.filter(g => mwg.contains(g.id.get))))
-
-        movieDetail
-      }
-      case None => Future {
-        None
+    val result = (movie, genres, movieWithGenres).mapN { (movie, gen, movieWithGenres) =>
+      movie.map { mov =>
+        val mwg = movieWithGenres.map(_._2).map(_.genreId)
+        MovieDetail(mov, gen.filter(g => mwg.contains(g.id.get)))
       }
     }
+    result
   }
 
-  def getMoviesByGenre(genreId: Int): Future[Seq[Movie]] = {
-    val movies = MovieSlickRepository.moviesByGenre(genreId)
+  def getMoviesByGenre(genreId: Int): F[Seq[Movie]] = {
+    val movies = evalDb(movieRepository.moviesByGenre(genreId))
     movies
   }
 }

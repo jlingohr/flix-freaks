@@ -7,11 +7,12 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.directives.MethodDirectives.get
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
-import app.FlixFreaks.movieService
 import main.scala.flix_freaks.json.SprayJsonCodes
-import main.scala.flix_freaks.service.interpreter.MovieService
+import main.scala.flix_freaks.service.MovieService
 
-class QueryRoute(service: MovieService)(implicit system: ActorSystem[_]) extends SprayJsonCodes {
+import scala.concurrent.Future
+
+class QueryRoute(movieService: MovieService[Future])(implicit system: ActorSystem[_]) extends SprayJsonCodes {
 
   def routes: Route = {
     val route: Route =
@@ -20,7 +21,6 @@ class QueryRoute(service: MovieService)(implicit system: ActorSystem[_]) extends
           pathPrefix("movie" / """\d+""".r) { id =>
             // there might be no item for a given id
             val movieDetail = movieService.getMovieDetails(id)
-
             onSuccess(movieDetail) { item =>
               complete(item)
             }
