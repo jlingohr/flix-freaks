@@ -16,7 +16,7 @@ class QueryRoute(handler: RestService[SimilarityMethod, RecommendedItem, ChartRe
   def routes: Route = {
     val route = concat(
       get {
-        pathPrefix("chart" / ) {
+        pathPrefix("chart" ) {
           val chart = handler.chart()
           onSuccess(chart) { chart =>
             complete(chart)
@@ -42,9 +42,9 @@ class QueryRoute(handler: RestService[SimilarityMethod, RecommendedItem, ChartRe
       },
       path("sim/user") {
         get {
-          parameters("userId", "simMethod") { (id: String, method: String) =>
+          parameters("userId", "simMethod") { (id: String, methodType: String) =>
             val userId = UserId(id)
-            val method = SimilarityMethod(method)
+            val method = SimilarityMethod.apply(methodType)
             val simUsers = handler.similarUsers(userId, method)
             onSuccess(simUsers) { users =>
               complete(users)

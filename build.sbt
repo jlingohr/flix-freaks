@@ -8,6 +8,8 @@ lazy val slickVersion = "3.3.2"
 lazy val akkaVersion = "2.6.9"
 val AkkaHttpVersion = "10.2.0"
 val slickJodaMapperVersion = "2.4.2"
+val scalaTestVersion = "3.2.0"
+val mockitoScalaVersion = "1.13.6"
 
 libraryDependencies ++= Seq(
   // Spray
@@ -31,8 +33,17 @@ libraryDependencies ++= Seq(
 
   // Cats
   "org.typelevel" %% "cats-core" % "2.0.0",
-  "com.rms.miu" %% "slick-cats" % "0.10.1"
+  "com.rms.miu" %% "slick-cats" % "0.10.1",
+
+  // Testin
+  "org.scalactic" %% "scalactic" % scalaTestVersion,
+  "org.scalatest" %% "scalatest" % scalaTestVersion % "test",
+  "org.mockito" %% "mockito-scala" % mockitoScalaVersion,
+  "org.mockito" %% "mockito-scala-scalatest" % mockitoScalaVersion,
+  "org.mockito" %% "mockito-scala-specs2" % mockitoScalaVersion,
+  "org.mockito" %% "mockito-scala-cats" % mockitoScalaVersion,
+  "org.mockito" %% "mockito-scala-scalaz" % mockitoScalaVersion
 
 )
 
-scalacOptions += "-Ypartial-unification"
+//scalacOptions += "-Ypartial-unification"

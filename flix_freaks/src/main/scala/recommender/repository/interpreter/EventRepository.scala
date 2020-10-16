@@ -1,21 +1,18 @@
 package main.scala.recommender.repository.interpreter
 
-import config.DatabaseConfig
-import domain.{EventLog, EventType, UserId}
+import domain.{EventType, UserId}
 import main.scala.recommender.repository.EventRepository
 import slick.jdbc.PostgresProfile.api._
-import slick.lifted.TableQuery
 
-import scala.concurrent.Future
 import main.scala.common.model.Events._
 import main.scala.recommender.domain.EventCount
 import main.scala.common.model.EventMapper._
 
 
-class EventSlickRepository extends EventRepository with DatabaseConfig {
+class EventSlickRepository extends EventRepository[DBIO] {
 
 
-  def filterContentByEvent(eventType: EventType, take: Int): Future[Seq[EventCount]] = {
+  def filterContentByEvent(eventType: EventType, take: Int): DBIO[Seq[EventCount]] = {
     val query =
       events
         .filter(_.event === eventType)
@@ -29,17 +26,17 @@ class EventSlickRepository extends EventRepository with DatabaseConfig {
           case (id, count) => ((id, count)) <> (EventCount.tupled, EventCount.unapply _)
         }
 
-    db.run(query.result)
+    query.result
   }
 
-  def getEventsForUser(userId: UserId): Future[Seq[String]] = {
+  def getEventsForUser(userId: UserId): DBIO[Seq[String]] = {
     val query =
       events
         .filter(_.userId === userId.value)
         .sortBy(_.created)
         .map(_.contentId)
         .distinct
-    db.run(query.result)
+    query.result
   }
 }
 

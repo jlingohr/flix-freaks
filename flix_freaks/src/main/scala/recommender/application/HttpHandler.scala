@@ -11,11 +11,11 @@ import scala.concurrent.{ExecutionContext, Future}
 import main.scala.recommender.service.interpreter.SimilarityCalculation._
 
 
-class HttpHandler(popularityRecommenderService: PopularityRecommenderService[BigDecimal, RecommendedItem, EventCount],
-                 movieRepository: MovieRepository,
-                 ratingRepository: RatingRepository[Rating],
+class HttpHandler(popularityRecommenderService: PopularityRecommenderService[Future, BigDecimal, RecommendedItem, EventCount],
+                 movieRepository: MovieRepository[Future],
+                 ratingRepository: RatingRepository[Future, Rating],
                  recsRepository: RecommendationRepository[SeededRecommendation],
-                 eventRepository: EventRepository)
+                 eventRepository: EventRepository[Future])
                  (implicit ec: ExecutionContext)
   extends RestService[SimilarityMethod, RecommendedItem, ChartRecommendation, SimilarUsersCalculation, SeededRecommendation, AssociationRule] {
 

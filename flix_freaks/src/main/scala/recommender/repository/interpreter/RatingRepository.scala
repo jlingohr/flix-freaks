@@ -1,20 +1,17 @@
 package main.scala.recommender.repository.interpreter
 
-import config.DatabaseConfig
 import domain.{Rating, UserId}
 import slick.jdbc.PostgresProfile.api._
-import slick.lifted.TableQuery
 
-import scala.concurrent.Future
 import main.scala.common.model.Ratings._
 import main.scala.recommender.repository.RatingRepository
 
-class RatingSlickRepository extends RatingRepository[Rating] with DatabaseConfig {
+class RatingSlickRepository extends RatingRepository[DBIO, Rating]{
 
-  def filterUser(userId: UserId): Future[Seq[Rating]] =
-    db.run(ratings.filter(_.userId === userId.value).result)
+  def filterUser(userId: UserId): DBIO[Seq[Rating]] =
+    ratings.filter(_.userId === userId.value).result
 
-  def filterMoviesIn(movies: Set[String]): Future[Seq[(String, String)]] = {
+  def filterMoviesIn(movies: Set[String]): DBIO[Seq[(String, String)]] = {
     val query =
       ratings
         .filter(_.movieId.inSet(movies))
@@ -22,23 +19,22 @@ class RatingSlickRepository extends RatingRepository[Rating] with DatabaseConfig
         .map {
           case ((movieId, userId), rating) => ((movieId, userId))
         }
-    db.run(query.result)
+    query.result
   }
 
-  def filterUsersIn(users: Set[String]): Future[Seq[Rating]] = {
+  def filterUsersIn(users: Set[String]): DBIO[Seq[Rating]] = {
     val query =
       ratings
         .filter(_.userId.inSet(users))
-    db.run(query.result)
+    query.result
   }
 
-  def getAvgRating(userId: UserId, itemId: String): Future[Option[BigDecimal]] = {
-    db.run(
-      ratings.filter(t => t.userId =!= userId.value && t.movieId === itemId).map(_.rating).avg.result
-    )
+  def getAvgRating(userId: UserId, itemId: String): DBIO[Option[BigDecimal]] = {
+    ratings.filter(t => t.userId =!= userId.value && t.movieId === itemId).map(_.rating).avg.result
+
   }
 
-  def getNotRatedBy(userId: UserId, take: Int): Future[Seq[(String, Int, Option[BigDecimal])]] = {
+  def getNotRatedBy(userId: UserId, take: Int): DBIO[Seq[(String, Int, Option[BigDecimal])]] = {
     val query = ratings
       .filter(_.userId =!= userId.value)
       .groupBy(_.movieId)
@@ -48,11 +44,11 @@ class RatingSlickRepository extends RatingRepository[Rating] with DatabaseConfig
       .sortBy(_._3.desc.nullsLast)
       .take(take)
 
-    db.run(query.result)
+    query.result
 
   }
 
-  def getAvgRatingForItem(itemId: String): Future[Option[Option[BigDecimal]]] = {
+  def getAvgRatingForItem(itemId: String): DBIO[Option[Option[BigDecimal]]] = {
     val query =
       ratings
         .filter(_.movieId === itemId)
@@ -63,7 +59,7 @@ class RatingSlickRepository extends RatingRepository[Rating] with DatabaseConfig
         .result
         .headOption
 
-    db.run(query)
+    query
   }
 }
 

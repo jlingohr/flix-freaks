@@ -1,27 +1,29 @@
 package main.scala.recommender.service.interpreter
 
+import cats.{Monad, MonadError, ~>}
+import cats.implicits._
 import domain.{EventType, UserId}
 import main.scala.recommender.domain.{EventCount, RecommendedItem}
 import main.scala.recommender.repository.{EventRepository, RatingRepository}
 import main.scala.recommender.service.PopularityRecommenderService
 
-import scala.concurrent.{ExecutionContext, Future}
 
 
+class PopularityRecommenderSlickService[F[_], DbEffect[_]](ratingRepository: RatingRepository[DbEffect, BigDecimal],
+                                                           logRepository: EventRepository[DbEffect],
+                                                           evalDb: DbEffect ~> F)
+                                                          (implicit mMonadError: MonadError[F, Throwable],
+                                                           dbEffectMonad: Monad[DbEffect])
+  extends PopularityRecommenderService[F, BigDecimal, RecommendedItem, EventCount] {
 
-class PopularityRecommenderSlickService(ratingRepository: RatingRepository[BigDecimal],
-                                       logRepository: EventRepository)
-                                       (implicit ec: ExecutionContext)
-  extends PopularityRecommenderService[BigDecimal, RecommendedItem, EventCount] {
-
-  override def predictScore(userId: UserId, itemId: String): Future[Option[BigDecimal]] = {
-    val avgRating = ratingRepository.getAvgRating(userId, itemId)
+  override def predictScore(userId: UserId, itemId: String): F[Option[BigDecimal]] = {
+    val avgRating = evalDb(ratingRepository.getAvgRating(userId, itemId))
 
     avgRating
   }
 
-  override def recommendItems(userId: UserId, num: Int): Future[Seq[RecommendedItem]] = {
-    val popularItems = ratingRepository.getNotRatedBy(userId, num)
+  override def recommendItems(userId: UserId, num: Int): F[Seq[RecommendedItem]] = {
+    val popularItems = evalDb(ratingRepository.getNotRatedBy(userId, num))
     popularItems.map { items =>
       items.map {
         case (id, count, rating) => RecommendedItem(id, count, rating.getOrElse(BigDecimal(0)))
@@ -29,15 +31,15 @@ class PopularityRecommenderSlickService(ratingRepository: RatingRepository[BigDe
     }
   }
 
-  override def recommendItemsFromLog(num: Int): Future[Seq[EventCount]] = {
-    val items = logRepository.filterContentByEvent(EventType.apply("play"), num)
+  override def recommendItemsFromLog(num: Int): F[Seq[EventCount]] = {
+    val items = evalDb(logRepository.filterContentByEvent(EventType.apply("play"), num))
     items
   }
 
-  override def recommendItemsByRatings(userId: UserId, activeUserItems: Seq[_], num: Int): Future[Seq[RecommendedItem]] = ???
+  override def recommendItemsByRatings(userId: UserId, activeUserItems: Seq[_], num: Int): F[Seq[RecommendedItem]] = ???
 
-  override def predictScoreByRatings(itemId: String): Future[Option[BigDecimal]] = {
-    val item = ratingRepository.getAvgRatingForItem(itemId)
+  override def predictScoreByRatings(itemId: String): F[Option[BigDecimal]] = {
+    val item = evalDb(ratingRepository.getAvgRatingForItem(itemId))
     item.map(_.getOrElse(Some(BigDecimal(0))))
   }
 
