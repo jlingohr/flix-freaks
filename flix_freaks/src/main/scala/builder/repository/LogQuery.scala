@@ -1,18 +1,16 @@
 package main.scala.builder.repository
 
-import domain.{EventLog, EventType, UserId}
+import domain.{EventType, UserId}
 
-import scala.concurrent.Future
-
-trait LogQuery[EventQuery] {
+trait LogQuery[F[_], EventQuery] {
   type AggregateUserEvent = (String, String, String, Int)
 
-  def queryLogForUsers: Future[Seq[String]]
+  def queryLogForUsers: F[Seq[String]]
 
-  def queryLogDataForUser(userId: UserId): Future[Seq[EventQuery]]
+  def queryLogDataForUser(userId: UserId): F[Seq[EventQuery]]
 
-  def queryAggregatedLogDataForUser(userId: UserId): Future[Seq[AggregateUserEvent]]
+  def queryAggregatedLogDataForUser(userId: UserId): F[Seq[AggregateUserEvent]]
 
-  def queryEvent(eventType: EventType): Future[Seq[EventQuery]]
+  def queryEvent(eventType: EventType): F[Seq[EventQuery]]
 
 }

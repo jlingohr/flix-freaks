@@ -1,24 +1,28 @@
 package main.scala.builder.service.interpreter
 
-import java.time.temporal.TemporalAmount
-import java.time.{Duration, Instant, Period}
+import java.time.{Duration, Instant}
 
-import domain.{EventLog, EventType, Rating, UserId, details, moreDetails, play}
-import main.scala.builder.repository.interpreter.LogSlickQuery
+import cats.{Monad, MonadError, ~>}
+import domain.{EventLog, EventType, UserId, details, moreDetails, play}
+import main.scala.builder.repository.LogQuery
 import main.scala.builder.service.ImplicitRatingCalculation
+import cats.implicits._
 
-import scala.concurrent.{ExecutionContext, Future}
 
 case class AggregatedUserEvent(userId: String, contentId: String, event: String, count: Int)
 
-import main.scala.builder.repository.interpreter.LogQuery._
 // TODO should be able to abstract out properly so not to depend on LogSlickQuery
-class ImplicitRatingCalculationInterpreter(w1: Int = 100, w2: Int = 50, w3: Int = 15)
-                                          (implicit ec: ExecutionContext)
-  extends ImplicitRatingCalculation {
+class ImplicitRatingCalculationInterpreter[F[_], DbEffect[_]](eventRepository: LogQuery[DbEffect, EventLog],
+                                                              w1: Int = 100,
+                                                              w2: Int = 50,
+                                                              w3: Int = 15,
+                                                             evalDb: DbEffect ~> F)
+                                                             (implicit mMonadError: MonadError[F, Throwable],
+                                                              dbEffectMonad: Monad[DbEffect])
+  extends ImplicitRatingCalculation[F] {
 
-  override def calculateImplicitRatingsForUser(userId: UserId): Future[Map[String, BigDecimal]] = {
-    val data = queryAggregatedLogDataForUser(userId)
+  override def calculateImplicitRatingsForUser(userId: UserId): F[Map[String, BigDecimal]] = {
+    val data = evalDb(eventRepository.queryAggregatedLogDataForUser(userId))
     val ratings = for {
       d <- data
     } yield buildRatings(d.map(t => AggregatedUserEvent(t._1, t._2, t._3, t._4)))
@@ -26,8 +30,8 @@ class ImplicitRatingCalculationInterpreter(w1: Int = 100, w2: Int = 50, w3: Int 
     ratings
   }
 
-  override def calculateImplicitRatingsWithDecay(userId: UserId): Future[Map[String, BigDecimal]] = {
-    val data = queryLogDataForUser(userId)
+  override def calculateImplicitRatingsWithDecay(userId: UserId): F[Map[String, BigDecimal]] = {
+    val data = evalDb(eventRepository.queryLogDataForUser(userId))
     val ratings = for {
       d <- data
     } yield buildRatingsWithDecay(d)
@@ -38,16 +42,15 @@ class ImplicitRatingCalculationInterpreter(w1: Int = 100, w2: Int = 50, w3: Int 
   def buildRatings(userEvents: Seq[AggregatedUserEvent]): Map[String, BigDecimal] = {
     val aggData = {
       userEvents.foldLeft(Map[String, Map[String, Int]]()) {
-        case (acc, event) => {
+        case (acc, event) =>
           val inner = acc.getOrElse(event.contentId, Map[String, Int]()) + (event.event -> event.count)
           acc + (event.contentId -> inner)
-        }
       }
     }
 
     val (maxRating, ratings) =
       aggData.foldLeft((BigDecimal(0), Map[String, BigDecimal]())) {
-        case ((maxRating, acc), (contentId, data)) => {
+        case ((maxRating, acc), (contentId, data)) =>
           val sum =
             w1 * data.getOrElse("play", 0) +
               w2 * data.getOrElse("details", 0) +
@@ -56,7 +59,6 @@ class ImplicitRatingCalculationInterpreter(w1: Int = 100, w2: Int = 50, w3: Int 
           val updatedMax = maxRating.max(rating)
 
           (updatedMax, acc + (contentId -> rating))
-        }
       }
 
     val weightedRatings =
@@ -78,14 +80,13 @@ class ImplicitRatingCalculationInterpreter(w1: Int = 100, w2: Int = 50, w3: Int 
     val ratings =
       data
         .foldLeft(Map[String, BigDecimal]()) {
-          case (acc, event) => {
+          case (acc, event) =>
             val duration = Duration.between(event.created, Instant.now())
             val age = duration.getNano / Instant.now().minus(Duration.ofDays(365)).getNano
             val decay = calculateDelay(age)
-            val w = BigDecimal(weights.get(event.event).get)
+            val w = BigDecimal(weights(event.event))
             val prev = acc.getOrElse(event.contentId, BigDecimal(0))
             acc + (event.contentId -> (prev + w * decay))
-          }
         }
 
     ratings

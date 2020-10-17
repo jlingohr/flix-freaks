@@ -1,25 +1,24 @@
 package main.scala.builder.service.interpreter
 
-import domain.{EventLog, play}
+import java.time.Instant
+
+import cats.implicits._
+import domain.EventLog
 import main.scala.builder.service.AssociationRuleBuilder
 import main.scala.common.domain.SeededRecommendation
 
-import scala.concurrent.Future
-import main.scala.builder.repository.interpreter.LogQuery._
-
-import java.time.Instant
-
 import scala.concurrent.ExecutionContext.Implicits.global
-
-import scalaz._
-import Scalaz._
+import scala.concurrent.Future
 
 
 case class Transaction()
 
-class AssociationRuleBuilderInterpreter extends AssociationRuleBuilder[EventLog, Map[String, List[String]], SeededRecommendation] {
-  override def retrievePlayEvents: Future[Seq[EventLog]] = queryEvent(play)
 
+class AssociationRuleBuilderInterpreter
+  extends AssociationRuleBuilder[Future, EventLog, Map[String, List[String]], SeededRecommendation] {
+
+
+  //TODO should be a better way to abstract over transaction generation without using Future explicitly
   override def generateTransactions(data: Seq[EventLog]): Future[Map[String, List[String]]] = Future {
     val transactions =
       data
@@ -123,7 +122,7 @@ class AssociationRuleBuilderInterpreter extends AssociationRuleBuilder[EventLog,
   }
 
   def hasSupport(perm: List[String], oneItemSets: Map[Set[String], Int]): Boolean = {
-    oneItemSets.contains(Set(perm(0))) && oneItemSets.contains(Set(perm(1)))
+    oneItemSets.contains(Set(perm.head)) && oneItemSets.contains(Set(perm(1)))
   }
 
 }

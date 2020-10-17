@@ -1,15 +1,13 @@
 package main.scala.builder.service
 
-import domain.{EventLog, EventType, Rating, UserId}
+import domain.UserId
 
-import scala.concurrent.Future
-
-trait ImplicitRatingCalculation {
+trait ImplicitRatingCalculation[F[_]] {
 
   def calculateDelay(ageInDays: Long): BigDecimal = 1 / ageInDays
 
-  def calculateImplicitRatingsWithDecay(userId: UserId): Future[Map[String, BigDecimal]]
+  def calculateImplicitRatingsWithDecay(userId: UserId): F[Map[String, BigDecimal]]
 
-  def calculateImplicitRatingsForUser(userId: UserId): Future[Map[String, BigDecimal]]
+  def calculateImplicitRatingsForUser(userId: UserId): F[Map[String, BigDecimal]]
 
 }

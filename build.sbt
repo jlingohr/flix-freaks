@@ -28,9 +28,6 @@ libraryDependencies ++= Seq(
   "com.lightbend.akka" %% "akka-stream-alpakka-slick" % "2.0.2",
   "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
 
-  // Scalaz
-  "org.scalaz" %% "scalaz-core" % "7.3.2",
-
   // Cats
   "org.typelevel" %% "cats-core" % "2.0.0",
   "com.rms.miu" %% "slick-cats" % "0.10.1",
