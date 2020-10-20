@@ -7,7 +7,7 @@ import cats.implicits.catsStdInstancesForFuture
 import com.typesafe.config.ConfigFactory
 import main.scala.common.db.SlickSupport.dbioTransformation
 import main.scala.common.db.{AbstractModel, DatabaseSupportFutureImpl}
-import main.scala.flix_freaks.akkahttp.akkahttp.QueryRoute
+import main.scala.flix_freaks.akkahttp.akkahttp.MovieQueryRoute
 import main.scala.flix_freaks.service.interpreter.MovieServiceInterpreter
 import repository.interpreter.{GenreSlickRepository, MovieSlickRepository}
 import slick.backend.DatabaseConfig
@@ -42,7 +42,7 @@ object FlixFreaks extends App {
   val genreRepository = new GenreSlickRepository
   val movieService: MovieService[Future] =
     new MovieServiceInterpreter[Future, DBIO](movieRepository, genreRepository, evalDb)
-  val routes = new QueryRoute(movieService)
+  val routes = new MovieQueryRoute(movieService)
 
   val bindingFuture = Http().newServerAt("localhost", 8080).bind(routes.routes)
 

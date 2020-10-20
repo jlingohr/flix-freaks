@@ -12,7 +12,7 @@ import main.scala.flix_freaks.service.MovieService
 
 import scala.concurrent.Future
 
-class QueryRoute(movieService: MovieService[Future])(implicit system: ActorSystem[_]) extends SprayJsonCodes {
+class MovieQueryRoute(movieService: MovieService[Future]) extends SprayJsonCodes {
 
   def routes: Route = {
     val route: Route =

@@ -9,8 +9,9 @@ import main.scala.common.model.{GenreTable, MovieGenre, MovieGenreTable, MovieTa
 import slick.lifted.TableQuery
 import slick.jdbc.PostgresProfile.api._
 
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, DurationInt}
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
+import scala.language.postfixOps
 
 object populateMovies extends App {
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "SingleRequest")

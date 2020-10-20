@@ -2,15 +2,21 @@ package main.scala.scripts
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.alpakka.slick.scaladsl.SlickSession
-import main.scala.builder.service.interpreter.AssociationRuleBuilder.buildAssociationRules
+import com.typesafe.config.ConfigFactory
+import domain.play
+import main.scala.builder.repository.interpreter.LogSlickQuery
+import main.scala.builder.service.interpreter.AssociationRuleBuilderInterpreter
+import main.scala.common.db.SlickSupport.dbioTransformation
+import main.scala.common.db.{AbstractModel, DatabaseSupportFutureImpl}
+import main.scala.common.domain.SeededRecommendation
 import main.scala.common.model.SeededRecs.seededRecs
+import slick.backend.DatabaseConfig
 import slick.dbio.DBIO
-import slick.jdbc.JdbcBackend.Database
+import slick.jdbc.JdbcProfile
 import slick.jdbc.PostgresProfile.api._
 
-import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 
 object RulerBuilder extends App {
 
@@ -18,15 +24,38 @@ object RulerBuilder extends App {
   implicit val executionContext = system.dispatcher
   implicit val materializer = ActorMaterializer()
 
-  val db = Database.forConfig("database")
-  val profile = slick.jdbc.PostgresProfile
-  val session = SlickSession.forDbAndProfile(db, profile)
+  private val config = ConfigFactory.load()
+  private val databaseConfig = config.getConfig("database")
+  private lazy val localDb = DatabaseConfig.forConfig[JdbcProfile]("database")
+
+  private lazy val databaseModel = new AbstractModel {
+    override val databaseProfile: JdbcProfile = localDb.profile
+  }
+
+  private object databaseSupport extends DatabaseSupportFutureImpl[databaseModel.type] {
+    override def db: JdbcProfile#Backend#Database = db
+    override val model: databaseModel.type = databaseModel
+  }
+  lazy val evalDb = dbioTransformation(databaseSupport)
+
+  val eventRepository = new LogSlickQuery
+  val rulerBuilder = new AssociationRuleBuilderInterpreter
+
+  def buildAssociationRules: Future[Seq[SeededRecommendation]] = {
+    val associationRules = for {
+      events <- evalDb(eventRepository.queryEvent(play))
+      transactions <- rulerBuilder.generateTransactions(events)
+      rules <- rulerBuilder.calculateSupportConfidence(transactions, 0.01)
+    } yield rules
+
+    associationRules
+  }
 
   val associationRules = buildAssociationRules
   val doneFuture = associationRules.flatMap { rules =>
-    db.run(
+    evalDb(
       DBIO.seq(
-        //      seededRecs.schema.create,
+        seededRecs.schema.create,
         seededRecs ++= rules
       )
     )

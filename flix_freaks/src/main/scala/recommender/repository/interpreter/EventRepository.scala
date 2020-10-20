@@ -39,5 +39,3 @@ class EventSlickRepository extends EventRepository[DBIO] {
     query.result
   }
 }
-
-object EventSlickRepository extends EventSlickRepository

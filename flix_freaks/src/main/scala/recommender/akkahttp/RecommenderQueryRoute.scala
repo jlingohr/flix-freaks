@@ -10,7 +10,9 @@ import main.scala.recommender.application.RestService
 import main.scala.recommender.domain.{AssociationRule, ChartRecommendation, RecommendedItem, SimilarUsersCalculation, SimilarityMethod}
 import main.scala.recommender.json.SprayJsonCodes
 
-class QueryRoute(handler: RestService[SimilarityMethod, RecommendedItem, ChartRecommendation, SimilarUsersCalculation, SeededRecommendation, AssociationRule])
+import scala.concurrent.Future
+
+class RecommenderQueryRoute(handler: RestService[Future, SimilarityMethod, RecommendedItem, ChartRecommendation, SimilarUsersCalculation, SeededRecommendation, AssociationRule])
   extends SprayJsonCodes{
 
   def routes: Route = {

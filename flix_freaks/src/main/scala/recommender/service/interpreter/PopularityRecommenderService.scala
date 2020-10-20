@@ -2,14 +2,14 @@ package main.scala.recommender.service.interpreter
 
 import cats.{Monad, MonadError, ~>}
 import cats.implicits._
-import domain.{EventType, UserId}
+import domain.{EventType, Rating, UserId}
 import main.scala.recommender.domain.{EventCount, RecommendedItem}
 import main.scala.recommender.repository.{EventRepository, RatingRepository}
 import main.scala.recommender.service.PopularityRecommenderService
 
 
 
-class PopularityRecommenderSlickService[F[_], DbEffect[_]](ratingRepository: RatingRepository[DbEffect, BigDecimal],
+class PopularityRecommenderSlickService[F[_], DbEffect[_]](ratingRepository: RatingRepository[DbEffect, Rating],
                                                            logRepository: EventRepository[DbEffect],
                                                            evalDb: DbEffect ~> F)
                                                           (implicit mMonadError: MonadError[F, Throwable],
