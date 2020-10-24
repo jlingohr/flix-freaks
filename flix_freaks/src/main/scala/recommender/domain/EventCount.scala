@@ -1,3 +1,5 @@
 package main.scala.recommender.domain
 
-case class EventCount(contentId: String, count: Int)
+import scala.common.domain.movies.MovieId
+
+case class EventCount(contentId: MovieId, count: Int)

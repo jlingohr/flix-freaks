@@ -7,10 +7,12 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.alpakka.slick.scaladsl.SlickSession
 import akka.stream.scaladsl.{Sink, Source}
-import domain.Rating
+import common.domain.auth.UserId
+import common.domain.ratings.UserRating
 import main.scala.common.model.RatingTable
 import slick.jdbc.PostgresProfile.api._
 
+import scala.common.domain.movies.MovieId
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
@@ -26,17 +28,17 @@ object populateRatings extends App {
 
   val uri = "src/main/resources/ratings.dat"
 
-  def parseRating(res: String): Rating = {
+  def parseRating(res: String): UserRating = {
     val r = res.split("::")
-    val userId = r(0)
-    val movieId = r(1)
+    val userId = UserId(r(0))
+    val movieId = MovieId(r(1))
     val rating = r(2)
     val timestamp = r(3)
 
-    Rating(userId, movieId, rating.toFloat, Instant.ofEpochMilli(timestamp.toLong * 1000))
+    UserRating(userId, movieId, rating.toFloat, Instant.ofEpochMilli(timestamp.toLong * 1000))
   }
 
-  def batchInsert(ratings: Seq[Rating]) = db run (ratingsTable ++= ratings)
+  def batchInsert(ratings: Seq[UserRating]) = db run (ratingsTable ++= ratings)
 
   val insertSink = Sink.foreach(batchInsert)
 

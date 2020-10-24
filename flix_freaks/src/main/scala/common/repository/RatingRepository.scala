@@ -1,13 +1,15 @@
 package repository
 
-import domain.{Rating, UserId}
+import common.domain.auth.UserId
+import common.domain.ratings.UserRating
 
-import scala.concurrent.Future
+import scala.common.domain.movies.MovieId
+
 
 trait RatingRepository[F[_]] {
 
-  def getByUser(userId: UserId): F[Seq[Rating]]
+  def getByUser(userId: UserId): F[Seq[UserRating]]
 
-  def getByMovie(movieId: String): F[Seq[Rating]]
+  def getByMovie(movieId: MovieId): F[Seq[UserRating]]
 
 }

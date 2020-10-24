@@ -10,6 +10,8 @@ val AkkaHttpVersion = "10.2.0"
 val slickJodaMapperVersion = "2.4.2"
 val scalaTestVersion = "3.2.0"
 val mockitoScalaVersion = "1.13.6"
+val newtypeVersion = "0.4.3"
+val refinedVersion = "0.9.12"
 
 libraryDependencies ++= Seq(
   // Spray
@@ -39,8 +41,15 @@ libraryDependencies ++= Seq(
   "org.mockito" %% "mockito-scala-scalatest" % mockitoScalaVersion,
   "org.mockito" %% "mockito-scala-specs2" % mockitoScalaVersion,
   "org.mockito" %% "mockito-scala-cats" % mockitoScalaVersion,
-  "org.mockito" %% "mockito-scala-scalaz" % mockitoScalaVersion
+  "org.mockito" %% "mockito-scala-scalaz" % mockitoScalaVersion,
+
+  // newtype
+  "io.estatico" %% "newtype" % newtypeVersion,
+  "eu.timepit" %% "refined" % refinedVersion,
+  "be.venneborg" %% "slick-refined" % "0.5.0",
+
 
 )
 
 //scalacOptions += "-Ypartial-unification"
+scalacOptions += "-Ymacro-annotations"

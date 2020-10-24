@@ -1,3 +1,5 @@
 package main.scala.recommender.domain
 
-case class RecommendedItem(movieId: String, numRatings: Int, avgRating: BigDecimal)
+import scala.common.domain.movies.MovieId
+
+case class RecommendedItem(movieId: MovieId, numRatings: Int, avgRating: BigDecimal)

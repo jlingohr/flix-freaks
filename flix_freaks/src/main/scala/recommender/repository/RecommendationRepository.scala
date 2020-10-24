@@ -1,10 +1,12 @@
 package main.scala.recommender.repository
 
+import scala.common.domain.movies.MovieId
+
 
 trait RecommendationRepository[F[_], SeededRec] {
-  type RecommendationWithAvgConf = (String, Option[BigDecimal])
+  type RecommendationWithAvgConf = (MovieId, Option[BigDecimal])
 
-  def getBySourceId(source: String, take: Int=6): F[Seq[SeededRec]]
-  def getBySourceIn(seeds: Set[String]): F[Seq[RecommendationWithAvgConf]]
+  def getBySourceId(source: MovieId, take: Int=6): F[Seq[SeededRec]]
+  def getBySourceIn(seeds: Set[MovieId]): F[Seq[RecommendationWithAvgConf]]
 
 }

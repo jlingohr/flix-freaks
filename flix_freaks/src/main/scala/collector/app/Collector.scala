@@ -4,8 +4,11 @@ import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives.{parameters, _}
+import common.domain.auth.UserId
+import common.domain.events.SessionId
 import main.scala.collector.service.LogSlickPublisherActor
 
+import scala.common.domain.movies.MovieId
 import scala.io.StdIn
 
 
@@ -20,7 +23,7 @@ object Collector extends App {
         post {
           parameters("user_id", "content_id", "event_type", "session_id") {
             (userId, contentId, eventType, sessionId) =>
-              system ! LogSlickPublisherActor.Event(userId, contentId, eventType, sessionId)
+              system ! LogSlickPublisherActor.Event(UserId(userId), MovieId(contentId), eventType, SessionId(sessionId))
               complete(StatusCodes.Accepted, "Event logged")
           }
         }

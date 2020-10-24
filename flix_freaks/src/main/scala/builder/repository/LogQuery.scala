@@ -1,11 +1,14 @@
 package main.scala.builder.repository
 
-import domain.{EventType, UserId}
+import common.domain.auth.UserId
+import common.domain.events.EventType
+
+import scala.common.domain.movies.MovieId
 
 trait LogQuery[F[_], EventQuery] {
-  type AggregateUserEvent = (String, String, String, Int)
+  type AggregateUserEvent = (UserId, MovieId, EventType, Int)
 
-  def queryLogForUsers: F[Seq[String]]
+  def queryLogForUsers: F[Seq[UserId]]
 
   def queryLogDataForUser(userId: UserId): F[Seq[EventQuery]]
 

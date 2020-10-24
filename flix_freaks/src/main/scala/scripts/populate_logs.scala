@@ -3,7 +3,8 @@ package main.scala.scripts
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.alpakka.slick.scaladsl.SlickSession
-import domain._
+import common.domain.auth.UserId
+import common.domain.events.{AddToList, Details, EventLog, GenreView, MoreDetails, Play, SessionId}
 import main.scala.common.model.LogTable
 import slick.jdbc.JdbcBackend.Database
 import slick.jdbc.PostgresProfile.api._
@@ -12,6 +13,7 @@ import spray.json.DefaultJsonProtocol._
 import spray.json._
 
 import scala.collection.SortedMap
+import scala.common.domain.movies.MovieId
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.util.Random
@@ -75,11 +77,11 @@ object User {
     )
 
     sample(actions) match {
-      case "genreView" => genreView
-      case "details" => details
-      case "moreDetails" => moreDetails
-      case "addToList" => addToList
-      case "play" => play
+      case "genreView" => GenreView
+      case "details" => Details
+      case "moreDetails" => MoreDetails
+      case "addToList" => AddToList
+      case "play" => Play
     }
   }
 
@@ -133,11 +135,11 @@ object populate_logs extends App {
     val selectedFilm = user.selectFilm(films)
     val action = selectAction
 
-    if (action == play) {
+    if (action == Play) {
       user.addEvent(selectedFilm)
     }
 
-    EventLog(0, java.time.Instant.now(), user.userId, selectedFilm, action, user.getSessionId.toString)
+    EventLog(0, java.time.Instant.now(), UserId(user.userId), MovieId(selectedFilm), action, SessionId(user.getSessionId.toString))
   }
 
   val done = db.run(table ++= logs)

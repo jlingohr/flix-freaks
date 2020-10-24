@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.directives.MethodDirectives.get
 import akka.http.scaladsl.server.directives.RouteDirectives.complete
 import analytics.service.AnalyticService
-import domain.UserId
+import common.domain.auth.UserId
 import json.SprayJsonCodes
 
 import scala.concurrent.Future

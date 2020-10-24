@@ -4,14 +4,16 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import domain.{Genre, Movie}
+import common.domain.genres.{Genre, GenreId, GenreName}
 import main.scala.common.model.{GenreTable, MovieGenre, MovieGenreTable, MovieTable}
 import slick.lifted.TableQuery
 import slick.jdbc.PostgresProfile.api._
 
+import scala.common.domain.movies.{Movie, MovieId, Title}
 import scala.concurrent.duration.{Duration, DurationInt}
 import scala.concurrent.{Await, ExecutionContextExecutor, Future}
 import scala.language.postfixOps
+import common.model.SlickColumnMapper._
 
 object populateMovies extends App {
   implicit val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "SingleRequest")
@@ -44,11 +46,13 @@ object populateMovies extends App {
       val title = titleAndYear(0)
       val year = titleAndYear(1).substring(0, 4).toIntOption
 
-      val movie = Movie(movieId, title, year)
+      val movie = {
+        Movie(MovieId(movieId), Title(title), year)
+      }
 
       val genres = genreString
         .split('|')
-        .map(Genre(None, _))
+        .map(x => Genre(GenreId(0), GenreName(x)))
 
       Some((movie, genres))
     } else {
@@ -82,7 +86,7 @@ object populateMovies extends App {
 
       val insertMoviesQuery = movieTable ++= movies
 
-      val insertGenresWithInc = genreTable returning genreTable.map(_.id) into ((genre, id) => genre.copy(Some(id)))
+      val insertGenresWithInc = genreTable returning genreTable.map(_.id) into ((genre, id) => genre.copy(id))
       val insertGenresQuery = insertGenresWithInc ++= genres
 
       val insertAction = DBIO.seq(insertMoviesQuery, insertGenresQuery)
@@ -94,7 +98,7 @@ object populateMovies extends App {
       // Use genres with ids to update MovieGenre table
       insertedGenres.flatMap { insertedGenres =>
         val movieWithGenres = res.flatMap {
-          case (movie, movieGenres) => movieGenres.map(genre => MovieGenre(movie.movieId, insertedGenres(genre.name).get))
+          case (movie, movieGenres) => movieGenres.map(genre => MovieGenre(movie.movieId, insertedGenres(genre.name)))
         }
 
         val insertMovieGenreQuery = movieGenreTable ++= movieWithGenres

@@ -1,6 +1,9 @@
 package repository
 
-import domain.{ContentId, EventLog, EventType, UserId}
+import common.domain.auth.UserId
+import common.domain.events.{EventLog, EventType}
+
+import scala.common.domain.movies.MovieId
 
 
 trait EventRepository[F[_]] {
@@ -9,7 +12,7 @@ trait EventRepository[F[_]] {
 
   def getByUserId(userId: UserId): F[Seq[EventLog]]
 
-  def getByContentId(contentId: ContentId): F[Seq[EventLog]]
+  def getByContentId(contentId: MovieId): F[Seq[EventLog]]
 
   def getByEventType(eventType: EventType): F[Seq[EventLog]]
 

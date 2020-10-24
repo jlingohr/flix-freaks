@@ -2,7 +2,8 @@ package test.scala.recommender.service
 
 import cats.arrow.FunctionK
 import cats.implicits._
-import domain.UserId
+import common.domain.auth.UserId
+import common.domain.ratings.UserRating
 import main.scala.recommender.domain.RecommendedItem
 import main.scala.recommender.repository.{EventRepository, RatingRepository}
 import main.scala.recommender.service.RecommenderService
@@ -11,6 +12,7 @@ import org.mockito.IdiomaticMockito
 import org.mockito.MockitoSugar.when
 import org.scalatest.funspec.AnyFunSpec
 
+import scala.common.domain.movies.MovieId
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -18,14 +20,14 @@ import scala.concurrent.Future
 
 class PopularityRecommenderServiceSpec extends AnyFunSpec with IdiomaticMockito {
 
-  private val ratingRepository = mock[RatingRepository[Future, BigDecimal]]
+  private val ratingRepository = mock[RatingRepository[Future, UserRating]]
   private val logRepository = mock[EventRepository[Future]]
 
   private val recommenderService: RecommenderService[Future, BigDecimal, RecommendedItem] =
     new PopularityRecommenderSlickService[Future, Future](ratingRepository, logRepository, FunctionK.id[Future])
 
   val userId: UserId = UserId("asdf")
-  val itemId: String = "asdf"
+  val itemId: MovieId = MovieId("asdf")
   val take = 3
 
   describe("Predicting user scores") {
@@ -54,14 +56,14 @@ class PopularityRecommenderServiceSpec extends AnyFunSpec with IdiomaticMockito 
 
     it("Should return no items if no items rated") {
       val values = Seq(
-        ("A", 5, Some(BigDecimal(5.0))),
-        ("B", 4, Some(BigDecimal(4.0))),
-        ("C", 0, None)
+        (MovieId("A"), 5, Some(BigDecimal(5.0))),
+        (MovieId("B"), 4, Some(BigDecimal(4.0))),
+        (MovieId("C"), 0, None)
       )
       val expected = Seq(
-        RecommendedItem("A", 5, BigDecimal(5.0)),
-        RecommendedItem("B", 4, BigDecimal(5.0)),
-        RecommendedItem("C", 0, BigDecimal(5.0))
+        RecommendedItem(MovieId("A"), 5, BigDecimal(5.0)),
+        RecommendedItem(MovieId("B"), 4, BigDecimal(5.0)),
+        RecommendedItem(MovieId("C"), 0, BigDecimal(5.0))
       )
 
       when(ratingRepository.getNotRatedBy(userId, take)) thenReturn Future.successful(values)

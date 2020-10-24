@@ -1,10 +1,13 @@
 package main.scala.flix_freaks.service
 
-import domain.{Movie, MovieDetail}
+
+import common.domain.genres.GenreId
+
+import scala.common.domain.movies.{Movie, MovieDetail, MovieId}
 
 trait MovieService[F[_]] {
 
-  def getMovieDetails(movieId: String): F[Option[MovieDetail]]
-  def getMoviesByGenre(genreId: Int): F[Seq[Movie]]
+  def getMovieDetails(movieId: MovieId): F[Option[MovieDetail]]
+  def getMoviesByGenre(genreId: GenreId): F[Seq[Movie]]
 
 }

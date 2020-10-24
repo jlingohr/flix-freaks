@@ -1,18 +1,18 @@
 package main.scala.recommender.repository.interpreter
 
-import main.scala.common.domain.SeededRecommendation
+import common.domain.recommendations.SeededRecommendation
 import main.scala.recommender.repository.RecommendationRepository
 import slick.jdbc.PostgresProfile.api._
-
 import main.scala.common.model.SeededRecs._
+import common.model.SlickColumnMapper._
 
+import scala.common.domain.movies.MovieId
 
-//case class RecommendationWithAvgConf(target: String, confidence: BigDecimal)
 
 class RecommendationSlickRepository
   extends RecommendationRepository[DBIO, SeededRecommendation] {
 
-  override def getBySourceId(contentId: String, take: Int=6): DBIO[Seq[SeededRecommendation]] = {
+  override def getBySourceId(contentId: MovieId, take: Int=6): DBIO[Seq[SeededRecommendation]] = {
     val query =
       seededRecs
         .filter(_.source === contentId)
@@ -21,7 +21,7 @@ class RecommendationSlickRepository
     query.result
   }
 
-  override def getBySourceIn(seeds: Set[String]): DBIO[Seq[(String, Option[BigDecimal])]] = {
+  override def getBySourceIn(seeds: Set[MovieId]): DBIO[Seq[(MovieId, Option[BigDecimal])]] = {
     val query =
       seededRecs
         .filter(t => t.source.inSet(seeds) && !t.target.inSet(seeds))
@@ -33,5 +33,3 @@ class RecommendationSlickRepository
     query.result
   }
 }
-
-object RecommendationRepository extends RecommendationSlickRepository

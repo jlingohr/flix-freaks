@@ -1,16 +1,23 @@
 package main.scala.common.model
 
+import common.domain.genres.GenreId
+import io.estatico.newtype.ops.toCoercibleIdOps
+import slick.jdbc.JdbcType
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.Tag
 
+import scala.common.domain.movies.{MovieId, Title}
 
-case class MovieGenre(movieId: String, genreId: Int)
+
+case class MovieGenre(movieId: MovieId, genreId: GenreId)
 
 class MovieGenreTable(tag: Tag) extends Table[MovieGenre](tag, "movie_genre") {
-  def movieId: Rep[String] = column[String]("movie_id")
-  def genreId: Rep[Int] = column[Int]("genre_id")
+  import common.model.SlickColumnMapper._
 
-  override def * = (movieId, genreId) <> ((MovieGenre.apply _).tupled, MovieGenre.unapply)
+  def movieId: Rep[MovieId] = column[MovieId]("movie_id")
+  def genreId: Rep[GenreId] = column[GenreId]("genre_id")
+
+  override def * = (movieId, genreId) <> (MovieGenre.tupled, MovieGenre.unapply)
 
   def pk = primaryKey("primaryKey", (movieId, genreId))
 

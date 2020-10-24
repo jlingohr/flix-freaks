@@ -1,15 +1,16 @@
 package repository
 
-import domain.Genre
+import common.domain.genres.{Genre, GenreId}
+
 
 trait GenreRepository[F[_]] {
 
   def findAll: F[Seq[Genre]]
 
-  def create(genre: Genre): F[Int]
+  def create(genre: Genre): F[GenreId]
 
-  def findById(genreId: Int): F[Genre]
+  def findById(genreId: GenreId): F[Genre]
 
-  def delete(genreId: Int): F[Int]
+  def delete(genreId: GenreId): F[Int]
 
 }

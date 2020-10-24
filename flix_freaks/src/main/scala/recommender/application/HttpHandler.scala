@@ -1,21 +1,21 @@
 package main.scala.recommender.application
 
 import cats.{Monad, MonadError, ~>}
-import domain.{Movie, Rating, UserId}
-import main.scala.common.domain.SeededRecommendation
 import main.scala.recommender.domain.{AssociationRule, ChartRecommendation, EventCount, Jaccard, Pearson, RecommendedItem, SimilarUsersCalculation, SimilarityMethod}
 import main.scala.recommender.repository.{EventRepository, RatingRepository, RecommendationRepository}
 import main.scala.recommender.service.PopularityRecommenderService
 import repository.MovieRepository
 import cats.implicits._
-
-
+import common.domain.auth.UserId
+import common.domain.ratings.UserRating
+import common.domain.recommendations.SeededRecommendation
 import main.scala.recommender.service.interpreter.SimilarityCalculation._
 
+import scala.common.domain.movies.{Movie, MovieId, Title}
 
 class HttpHandler[F[_], DbEffect[_]](popularityRecommenderService: PopularityRecommenderService[F, BigDecimal, RecommendedItem, EventCount],
                         movieRepository: MovieRepository[DbEffect],
-                        ratingRepository: RatingRepository[DbEffect, Rating],
+                        ratingRepository: RatingRepository[DbEffect, UserRating],
                         recsRepository: RecommendationRepository[DbEffect, SeededRecommendation],
                         eventRepository: EventRepository[DbEffect],
                         evalDb: DbEffect ~> F)
@@ -23,7 +23,7 @@ class HttpHandler[F[_], DbEffect[_]](popularityRecommenderService: PopularityRec
                                   dbEffectMonad: Monad[DbEffect])
   extends RestService[F, SimilarityMethod, RecommendedItem, ChartRecommendation, SimilarUsersCalculation, SeededRecommendation, AssociationRule] {
 
-  override def getAssociationRulesFor(contentId: String, take: Int): F[Seq[SeededRecommendation]] = {
+  override def getAssociationRulesFor(contentId: MovieId, take: Int): F[Seq[SeededRecommendation]] = {
     evalDb(recsRepository.getBySourceId(contentId, take))
   }
 
@@ -59,7 +59,7 @@ class HttpHandler[F[_], DbEffect[_]](popularityRecommenderService: PopularityRec
     similarUsers
   }
 
-  override def similarContent(contentId: String, take: Int): F[RecommendedItem] = ???
+  override def similarContent(contentId: MovieId, take: Int): F[RecommendedItem] = ???
 
   override def recsContentBased(userId: UserId, take: Int): F[RecommendedItem] = ???
 
@@ -77,15 +77,13 @@ class HttpHandler[F[_], DbEffect[_]](popularityRecommenderService: PopularityRec
   }
 
   def buildChart(items: Seq[EventCount], movies: Seq[Movie]): Seq[ChartRecommendation] = {
-    val movieChart = movies.map {
-      case movie => (movie.movieId -> movie.title)
-    }.toMap
+    val movieChart = movies.map(movie => (movie.movieId -> movie.title)).toMap
     val sortedItems =
       items
         .map {
-          case item => {
+          item => {
             val movieId = item.contentId
-            val title = movieChart.getOrElse(movieId, "")
+            val title = movieChart.getOrElse(movieId, Title(""))
             ChartRecommendation(movieId, title)
           }
         }
@@ -94,14 +92,14 @@ class HttpHandler[F[_], DbEffect[_]](popularityRecommenderService: PopularityRec
 
   def computeScores(userId: UserId,
                     numRated: Int,
-                    simUsers: Seq[(String, String)],
-                    filteredUsers: Seq[Rating],
+                    simUsers: Seq[(MovieId, UserId)],
+                    filteredUsers: Seq[UserRating],
                     method: SimilarityMethod): SimilarUsersCalculation = {
     // Based on current users' ratings, retrieve all users who also
     // rated one or more of those films
     val users =
       simUsers
-        .foldLeft(Map[String, Int]()) {
+        .foldLeft(Map[UserId, Int]()) {
           case (acc, (movieId, userId)) =>
             val oldVal = acc.getOrElse(userId, 0)
             acc.updated(userId, oldVal + 1)
@@ -109,12 +107,12 @@ class HttpHandler[F[_], DbEffect[_]](popularityRecommenderService: PopularityRec
         .filter(_._2 > 1)
     val allUserIds = users.keySet
 
-    val dataset: Map[String, Map[String, BigDecimal]] = {
+    val dataset: Map[UserId, Map[MovieId, BigDecimal]] = {
       filteredUsers
-        .foldLeft(Map[String, Map[String, BigDecimal]]()) {
+        .foldLeft(Map[UserId, Map[MovieId, BigDecimal]]()) {
           case (acc, rating) =>
             if (allUserIds.contains(rating.userId)) {
-              val existingValue = acc.getOrElse(rating.userId, Map[String, BigDecimal]())
+              val existingValue = acc.getOrElse(rating.userId, Map[MovieId, BigDecimal]())
               val newValue = existingValue + (rating.movieId -> rating.rating)
               acc + (rating.userId -> newValue)
             } else {
@@ -123,13 +121,13 @@ class HttpHandler[F[_], DbEffect[_]](popularityRecommenderService: PopularityRec
         }
     }
 
-    val similarity: Map[String, BigDecimal] =
+    val similarity: Map[UserId, BigDecimal] =
       allUserIds
-        .foldLeft(Map[String, BigDecimal]()) {
+        .foldLeft(Map[UserId, BigDecimal]()) {
           case (acc, uid) =>
             val s = method match {
-              case Jaccard => jaccard(dataset, userId, UserId(uid))
-              case Pearson => pearson(dataset, userId, UserId(uid))
+              case Jaccard => jaccard(dataset, userId, uid)
+              case Pearson => pearson(dataset, userId, uid)
             }
 
             if (s > BigDecimal(0.2)) {
@@ -149,7 +147,7 @@ class HttpHandler[F[_], DbEffect[_]](popularityRecommenderService: PopularityRec
     SimilarUsersCalculation(userId, numRated, method, topN, topN)
   }
 
-  def formatRules(rules: Seq[(String, Option[BigDecimal])]): Seq[AssociationRule] = {
+  def formatRules(rules: Seq[(MovieId, Option[BigDecimal])]): Seq[AssociationRule] = {
     rules.map(tup => AssociationRule(tup._1, tup._2))
   }
 }

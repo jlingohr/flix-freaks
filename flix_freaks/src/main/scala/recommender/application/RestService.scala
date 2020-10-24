@@ -1,6 +1,6 @@
 package main.scala.recommender.application
 
-import domain.UserId
+import common.domain.auth.UserId
 import main.scala.recommender.domain.RecommendedItem
 
 

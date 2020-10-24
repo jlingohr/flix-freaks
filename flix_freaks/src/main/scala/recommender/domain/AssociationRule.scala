@@ -1,3 +1,5 @@
 package main.scala.recommender.domain
 
-case class AssociationRule(id: String, confidence: Option[BigDecimal])
+import scala.common.domain.movies.MovieId
+
+case class AssociationRule(id: MovieId, confidence: Option[BigDecimal])

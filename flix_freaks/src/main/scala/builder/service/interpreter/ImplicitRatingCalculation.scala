@@ -3,13 +3,15 @@ package main.scala.builder.service.interpreter
 import java.time.{Duration, Instant}
 
 import cats.{Monad, MonadError, ~>}
-import domain.{EventLog, EventType, UserId, details, moreDetails, play}
 import main.scala.builder.repository.LogQuery
 import main.scala.builder.service.ImplicitRatingCalculation
 import cats.implicits._
+import common.domain.auth.UserId
+import common.domain.events.{AggregatedUserEvent, Details, EventLog, EventType, MoreDetails, Play}
+
+import scala.common.domain.movies.MovieId
 
 
-case class AggregatedUserEvent(userId: String, contentId: String, event: String, count: Int)
 
 // TODO should be able to abstract out properly so not to depend on LogSlickQuery
 class ImplicitRatingCalculationInterpreter[F[_], DbEffect[_]](eventRepository: LogQuery[DbEffect, EventLog],
@@ -21,7 +23,7 @@ class ImplicitRatingCalculationInterpreter[F[_], DbEffect[_]](eventRepository: L
                                                               dbEffectMonad: Monad[DbEffect])
   extends ImplicitRatingCalculation[F] {
 
-  override def calculateImplicitRatingsForUser(userId: UserId): F[Map[String, BigDecimal]] = {
+  override def calculateImplicitRatingsForUser(userId: UserId): F[Map[MovieId, BigDecimal]] = {
     val data = evalDb(eventRepository.queryAggregatedLogDataForUser(userId))
     val ratings = for {
       d <- data
@@ -30,7 +32,7 @@ class ImplicitRatingCalculationInterpreter[F[_], DbEffect[_]](eventRepository: L
     ratings
   }
 
-  override def calculateImplicitRatingsWithDecay(userId: UserId): F[Map[String, BigDecimal]] = {
+  override def calculateImplicitRatingsWithDecay(userId: UserId): F[Map[MovieId, BigDecimal]] = {
     val data = evalDb(eventRepository.queryLogDataForUser(userId))
     val ratings = for {
       d <- data
@@ -39,22 +41,22 @@ class ImplicitRatingCalculationInterpreter[F[_], DbEffect[_]](eventRepository: L
     ratings
   }
 
-  def buildRatings(userEvents: Seq[AggregatedUserEvent]): Map[String, BigDecimal] = {
+  def buildRatings(userEvents: Seq[AggregatedUserEvent]): Map[MovieId, BigDecimal] = {
     val aggData = {
-      userEvents.foldLeft(Map[String, Map[String, Int]]()) {
+      userEvents.foldLeft(Map[MovieId, Map[EventType, Int]]()) {
         case (acc, event) =>
-          val inner = acc.getOrElse(event.contentId, Map[String, Int]()) + (event.event -> event.count)
+          val inner = acc.getOrElse(event.contentId, Map[EventType, Int]()) + (event.event -> event.count)
           acc + (event.contentId -> inner)
       }
     }
 
     val (maxRating, ratings) =
-      aggData.foldLeft((BigDecimal(0), Map[String, BigDecimal]())) {
+      aggData.foldLeft((BigDecimal(0), Map[MovieId, BigDecimal]())) {
         case ((maxRating, acc), (contentId, data)) =>
           val sum =
-            w1 * data.getOrElse("play", 0) +
-              w2 * data.getOrElse("details", 0) +
-              w3 * data.getOrElse("moreDetails", 0)
+            w1 * data.getOrElse(Play, 0) +
+              w2 * data.getOrElse(Details, 0) +
+              w3 * data.getOrElse(MoreDetails, 0)
           val rating = BigDecimal(sum)
           val updatedMax = maxRating.max(rating)
 
@@ -69,17 +71,17 @@ class ImplicitRatingCalculationInterpreter[F[_], DbEffect[_]](eventRepository: L
     weightedRatings
   }
 
-  def buildRatingsWithDecay(data: Seq[EventLog]): Map[String, BigDecimal] = {
+  def buildRatingsWithDecay(data: Seq[EventLog]): Map[MovieId, BigDecimal] = {
     val weights: Map[EventType, Int] = Map(
-      play -> w1,
-      moreDetails -> w2,
-      details -> w3
+      Play -> w1,
+      MoreDetails -> w2,
+      Details -> w3
     )
 
     //TODO this is probably wrong and need to rethink Java Time classes
     val ratings =
       data
-        .foldLeft(Map[String, BigDecimal]()) {
+        .foldLeft(Map[MovieId, BigDecimal]()) {
           case (acc, event) =>
             val duration = Duration.between(event.created, Instant.now())
             val age = duration.getNano / Instant.now().minus(Duration.ofDays(365)).getNano

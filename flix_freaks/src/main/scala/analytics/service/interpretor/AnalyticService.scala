@@ -2,10 +2,15 @@ package service.interpretor
 
 import analytics.service.AnalyticService
 import cats.{Monad, MonadError, ~>}
-import domain._
 import main.scala.common.model.MovieGenre
 import repository._
 import cats.implicits._
+import common.domain.auth.UserId
+import common.domain.genres.GenreId
+import common.domain.ratings.UserRating
+import domain.{ContentAnalytics, GenreStatistics, MovieDTO, UserAnalytics}
+
+import scala.common.domain.movies.{Movie, MovieId}
 
 
 class AnalyticServiceInterpreter[F[_], DbEffect[_]](ratingService: RatingRepository[DbEffect],
@@ -41,16 +46,16 @@ class AnalyticServiceInterpreter[F[_], DbEffect[_]](ratingService: RatingReposit
     userAnalytics
   }
 
-  override def getContentAnalytics(contentId: ContentId): F[ContentAnalytics] = ???
+  override def getContentAnalytics(contentId: MovieId): F[ContentAnalytics] = ???
 
   private def buildMovieDTOs(movies: Seq[Movie],
-                             ratings: Map[String, Rating]) = {
+                             ratings: Map[MovieId, UserRating]) = {
     movies.map(movie => MovieDTO(movie.movieId, movie.title, ratings.get(movie.movieId)))
   }
 
   //TODO probably a more efficient way to do this
   private def buildGenreStatistics(moviesWithGenres: Seq[(Movie, MovieGenre)],
-                                  ratings: Map[String, Rating]): GenreStatistics = {
+                                  ratings: Map[MovieId, UserRating]): GenreStatistics = {
     val userAvg = if (ratings.nonEmpty) {
       val ratingSum = ratings.foldLeft(BigDecimal(0.0)) {
         case (acc, (id, rating)) => acc + rating.rating
@@ -65,7 +70,7 @@ class AnalyticServiceInterpreter[F[_], DbEffect[_]](ratingService: RatingReposit
     }.groupBy(identity)
       .mapValues(x => BigDecimal(x.size))
 
-    val genreRatings = moviesWithGenres.foldLeft(Map[Int, BigDecimal]()) {
+    val genreRatings = moviesWithGenres.foldLeft(Map[GenreId, BigDecimal]()) {
       case (acc, (movie, movieGenre)) => {
         val rating = ratings.get(movie.movieId).map(_.rating - userAvg).getOrElse(BigDecimal(0.0))
         val updated = acc.getOrElse(movieGenre.genreId, BigDecimal(0)) + rating

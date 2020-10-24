@@ -3,12 +3,12 @@ package main.scala.scripts
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
-import domain.play
+import common.domain.events.Play
+import common.domain.recommendations.SeededRecommendation
 import main.scala.builder.repository.interpreter.LogSlickQuery
 import main.scala.builder.service.interpreter.AssociationRuleBuilderInterpreter
 import main.scala.common.db.SlickSupport.dbioTransformation
 import main.scala.common.db.{AbstractModel, DatabaseSupportFutureImpl}
-import main.scala.common.domain.SeededRecommendation
 import main.scala.common.model.SeededRecs.seededRecs
 import slick.backend.DatabaseConfig
 import slick.dbio.DBIO
@@ -43,7 +43,7 @@ object RulerBuilder extends App {
 
   def buildAssociationRules: Future[Seq[SeededRecommendation]] = {
     val associationRules = for {
-      events <- evalDb(eventRepository.queryEvent(play))
+      events <- evalDb(eventRepository.queryEvent(Play))
       transactions <- rulerBuilder.generateTransactions(events)
       rules <- rulerBuilder.calculateSupportConfidence(transactions, 0.01)
     } yield rules

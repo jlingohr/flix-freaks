@@ -1,14 +1,16 @@
 package main.scala.recommender.service.interpreter
 
-import domain.UserId
+import common.domain.auth.UserId
 import main.scala.recommender.service.SimilarityCalculation
+
+import scala.common.domain.movies.MovieId
 
 object SimilarityCalculation extends SimilarityCalculation[UserId, BigDecimal] {
 
-  override def pearson(users: Map[String, Map[String, BigDecimal]], thisUser: UserId, thatUser: UserId): BigDecimal = {
-    if (users.contains(thisUser.value) && users.contains(thatUser.value)) {
-      val thisUserRatings = users.get(thisUser.value)
-      val thatUserRatings = users.get(thatUser.value)
+  override def pearson(users: Map[UserId, Map[MovieId, BigDecimal]], thisUser: UserId, thatUser: UserId): BigDecimal = {
+    if (users.contains(thisUser) && users.contains(thatUser)) {
+      val thisUserRatings = users.get(thisUser)
+      val thatUserRatings = users.get(thatUser)
       val score = for {
         thisur <- thisUserRatings
         thatur <- thatUserRatings
@@ -20,10 +22,10 @@ object SimilarityCalculation extends SimilarityCalculation[UserId, BigDecimal] {
     }
   }
 
-  override def jaccard(users: Map[String, Map[String, BigDecimal]], thisUser: UserId, thatUser: UserId): BigDecimal = {
-    if (users.contains(thisUser.value) && users.contains(thatUser.value)) {
-      val thisUserRatings = users.get(thisUser.value).map(_.keys.toSet).getOrElse(Set.empty)
-      val thatUserRatings = users.get(thatUser.value).map(_.keys.toSet).getOrElse(Set.empty)
+  override def jaccard(users: Map[UserId, Map[MovieId, BigDecimal]], thisUser: UserId, thatUser: UserId): BigDecimal = {
+    if (users.contains(thisUser) && users.contains(thatUser)) {
+      val thisUserRatings = users.get(thisUser).map(_.keys.toSet).getOrElse(Set.empty)
+      val thatUserRatings = users.get(thatUser).map(_.keys.toSet).getOrElse(Set.empty)
       val intersect = thisUserRatings.intersect(thatUserRatings)
       val union = thisUserRatings.union(thatUserRatings)
       val iou = intersect.size / union.size.toDouble
@@ -33,7 +35,7 @@ object SimilarityCalculation extends SimilarityCalculation[UserId, BigDecimal] {
     }
   }
 
-  def computePearson(thisUserRatings: Map[String, BigDecimal], thatUserRatings: Map[String, BigDecimal]): BigDecimal = {
+  def computePearson(thisUserRatings: Map[MovieId, BigDecimal], thatUserRatings: Map[MovieId, BigDecimal]): BigDecimal = {
     val thisUserAvg = thisUserRatings.values.sum / thisUserRatings.values.size
     val thatUserAvg = thatUserRatings.values.sum / thatUserRatings.values.size
     val allMovies = thisUserRatings.keySet.intersect(thatUserRatings.keySet)

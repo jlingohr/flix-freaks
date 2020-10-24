@@ -1,3 +1,5 @@
 package main.scala.recommender.domain
 
-case class ChartRecommendation(movieId: String, title: String)
+import scala.common.domain.movies.{MovieId, Title}
+
+case class ChartRecommendation(movieId: MovieId, title: Title)
